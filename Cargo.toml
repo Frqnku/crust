@@ -1,0 +1,32 @@
+[package]
+name = "crust"
+version = "0.1.0"
+edition = "2024"
+
+[workspace]
+members = [
+    # Bounded contexts
+    # Scaffolding
+    "crates/scaffolding/domain",
+    "crates/scaffolding/application",
+    "crates/scaffolding/infrastructure",
+
+    # Workspace
+    "crates/workspace/domain",
+    "crates/workspace/application",
+    "crates/workspace/infrastructure",
+
+    # Config
+    "crates/config/domain",
+    "crates/config/application",
+    "crates/config/infrastructure",
+
+    # Adapters
+    # CLI
+    "cli",
+]
+
+[dependencies]
+
+[profile.release]
+opt-level = 3

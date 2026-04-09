@@ -1,0 +1,8 @@
+[package]
+name = "config_infrastructure"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+config_domain = { path = "../domain" }
+config_application = { path = "../application" }

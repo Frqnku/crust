@@ -1,0 +1,7 @@
+[package]
+name = "workspace_application"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+workspace_domain = { path = "../domain" }
