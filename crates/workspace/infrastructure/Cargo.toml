@@ -5,4 +5,5 @@ edition = "2024"
 
 [dependencies]
 workspace_domain = { path = "../domain" }
-workspace_application = { path = "../application" }
+shared_infrastructure = { path = "../../shared/infrastructure" }
+toml_edit.workspace = true
