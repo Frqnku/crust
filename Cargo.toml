@@ -1,9 +1,5 @@
-[package]
-name = "crust"
-version = "0.1.0"
-edition = "2024"
-
 [workspace]
+resolver = "3"
 members = [
     # Bounded contexts
     # Scaffolding
@@ -21,12 +17,19 @@ members = [
     "crates/config/application",
     "crates/config/infrastructure",
 
-    # Adapters
-    # CLI
-    "cli",
+    # Shared
+    "crates/shared/infrastructure",
+
+    # Binaries
+    # main
+    "bin"
 ]
 
-[dependencies]
+[workspace.dependencies]
+toml_edit = "0.25"
+
+[profile.dev]
+opt-level = 1
 
 [profile.release]
 opt-level = 3
