@@ -35,6 +35,7 @@ fn create_layer_workspace(
     create_dir(&workspace_path.join("src")).map_err(map_fs_error)?;
     let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name.as_str());
     create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(map_fs_error)?;
+    create_file(&workspace_path.join("src").join("lib.rs"), "").map_err(map_fs_error)?;
 
     Ok(())
 }
