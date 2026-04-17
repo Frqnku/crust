@@ -124,8 +124,27 @@ mod tests {
         assert_layer_workspace(&bounded_context_path.join("domain"));
         assert_layer_workspace(&bounded_context_path.join("infrastructure"));
 
+        let application_src_path = bounded_context_path.join("application").join("src");
+        assert_contains_exactly(&application_src_path, &["command", "lib.rs", "query"]);
+        assert!(application_src_path.join("query").join("mod.rs").is_file());
+        assert!(application_src_path.join("command").join("mod.rs").is_file());
+        let application_lib_rs = fs::read_to_string(application_src_path.join("lib.rs"))
+            .expect("application lib.rs should be readable");
+        assert!(
+            application_lib_rs.contains("pub mod query;"),
+            "application lib.rs should export query module"
+        );
+        assert!(
+            application_lib_rs.contains("pub mod command;"),
+            "application lib.rs should export command module"
+        );
+
         let root_cargo_toml = fs::read_to_string(project.path.join("Cargo.toml"))
             .expect("root Cargo.toml should be readable");
+        assert!(
+            root_cargo_toml.contains("# Sales"),
+            "root Cargo.toml should include the bounded contexts comment"
+        );
         assert!(
             root_cargo_toml.contains("\"crates/sales/domain\""),
             "root Cargo.toml should include domain workspace member"

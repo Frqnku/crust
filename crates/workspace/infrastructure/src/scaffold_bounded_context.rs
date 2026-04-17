@@ -17,6 +17,52 @@ use workspace_domain::{
     errors::WorkspaceError,
 };
 
+const APPLICATION_LAYER: &str = "application";
+
+fn context_member_paths(bounded_context_name: &str) -> [String; 3] {
+    [
+        format!("crates/{bounded_context_name}/domain"),
+        format!("crates/{bounded_context_name}/application"),
+        format!("crates/{bounded_context_name}/infrastructure"),
+    ]
+}
+
+fn add_member_if_missing(members: &mut Array, member: &str, prefix: &str) -> bool {
+    if members.iter().any(|value| value.as_str() == Some(member)) {
+        return false;
+    }
+
+    let mut formatted = Value::from(member);
+    formatted.decor_mut().set_prefix(prefix);
+    formatted.decor_mut().set_suffix("");
+    members.push_formatted(formatted);
+    true
+}
+
+fn bounded_context_member_prefix(is_first_member: bool, bounded_context_name: &str) -> String {
+    if is_first_member {
+        format!("\n\n    # {}{}\n    ",
+            bounded_context_name.chars().next().unwrap_or('?').to_uppercase(),
+            &bounded_context_name[1..]
+        )
+    } else {
+        "\n    ".to_string()
+    }
+}
+
+fn scaffold_application_sources(src_path: &Path) -> Result<(), WorkspaceError> {
+    let query_path = src_path.join("query");
+    let command_path = src_path.join("command");
+
+    create_dir(&query_path).map_err(map_fs_error)?;
+    create_dir(&command_path).map_err(map_fs_error)?;
+    create_file(&query_path.join("mod.rs"), "").map_err(map_fs_error)?;
+    create_file(&command_path.join("mod.rs"), "").map_err(map_fs_error)?;
+    create_file(&src_path.join("lib.rs"), "pub mod query;\npub mod command;\n").map_err(map_fs_error)?;
+
+    Ok(())
+}
+
 fn map_fs_error(error: FsHelperError) -> WorkspaceError {
     match error {
         FsHelperError::Conflict { path, reason } => WorkspaceError::ProjectStructureConflict { path, reason },
@@ -32,10 +78,16 @@ fn create_layer_workspace(
 ) -> Result<(), WorkspaceError> {
     let workspace_path = bounded_context_path.join(workspace_layer_name);
     create_dir(&workspace_path).map_err(map_fs_error)?;
-    create_dir(&workspace_path.join("src")).map_err(map_fs_error)?;
+    let src_path = workspace_path.join("src");
+    create_dir(&src_path).map_err(map_fs_error)?;
     let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name.as_str());
     create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(map_fs_error)?;
-    create_file(&workspace_path.join("src").join("lib.rs"), "").map_err(map_fs_error)?;
+
+    if workspace_layer_name == APPLICATION_LAYER {
+        scaffold_application_sources(&src_path)?;
+    } else {
+        create_file(&src_path.join("lib.rs"), "").map_err(map_fs_error)?;
+    }
 
     Ok(())
 }
@@ -70,33 +122,15 @@ fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedCon
             reason: "[workspace].members must be an array".to_string(),
         })?;
 
-    let bounded_context_name = bounded_context.name.as_str();
-    let new_members = [
-        format!("crates/{bounded_context_name}/domain"),
-        format!("crates/{bounded_context_name}/application"),
-        format!("crates/{bounded_context_name}/infrastructure"),
-    ];
+    let new_members = context_member_paths(bounded_context.name.as_str());
 
     let mut inserted_any = false;
     let mut is_first_inserted = true;
-
     for member in new_members {
-        if !members.iter().any(|value| value.as_str() == Some(member.as_str())) {
-            let mut formatted = Value::from(member);
-            if is_first_inserted {
-                formatted
-                    .decor_mut()
-                    .set_prefix(&format!("\n    # {}{}\n    ",
-                        bounded_context_name.chars().next().unwrap_or('?').to_uppercase(),
-                        bounded_context_name.get(1..).unwrap_or("")));
-                is_first_inserted = false;
-            } else {
-                formatted.decor_mut().set_prefix("\n    ");
-            }
-
-            formatted.decor_mut().set_suffix("");
-            members.push_formatted(formatted);
+        let prefix = bounded_context_member_prefix(is_first_inserted, bounded_context.name.as_str());
+        if add_member_if_missing(members, &member, &prefix) {
             inserted_any = true;
+            is_first_inserted = false;
         }
     }
 
