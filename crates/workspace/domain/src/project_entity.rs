@@ -1,10 +1,8 @@
 use std::fmt;
 use std::path::PathBuf;
 
-use crate::{
-    entities::BoundedContext,
-    errors::WorkspaceError,
-};
+use crate::errors::WorkspaceError;
+use shared_domain::bounded_context_entity::BoundedContext;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectName(String);
