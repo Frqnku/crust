@@ -1,7 +1,9 @@
 pub const PROJECT_CARGO_TOML: &str = r#"[workspace]
 resolver = "3"
 members = [
-    "bin"
+    "bin",
+
+    # Bounded context crates
 ]
 
 [workspace.dependencies]

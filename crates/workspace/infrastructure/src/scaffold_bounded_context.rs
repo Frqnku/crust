@@ -1,4 +1,6 @@
+use std::fs;
 use std::path::Path;
+use toml_edit::{Array, DocumentMut, Item, Value};
 
 use shared_infrastructure::fs_helper::{
     create_dir,
@@ -37,6 +39,80 @@ fn create_layer_workspace(
     Ok(())
 }
 
+fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedContext) -> Result<(), WorkspaceError> {
+    let cargo_toml_path = project.path.join("Cargo.toml");
+    let cargo_toml_content = fs::read_to_string(&cargo_toml_path)
+        .map_err(|error| map_fs_error(FsHelperError::Conflict {
+            path: cargo_toml_path.clone(),
+            reason: format!("Failed to read file: {error}"),
+        }))?;
+
+    let mut document = cargo_toml_content
+        .parse::<DocumentMut>()
+        .map_err(|error| WorkspaceError::InvalidProjectLayout {
+            path: cargo_toml_path.clone(),
+            reason: format!("Invalid root Cargo.toml: {error}"),
+        })?;
+
+    if !document["workspace"].is_table() {
+        document["workspace"] = Item::Table(toml_edit::Table::new());
+    }
+
+    if !document["workspace"]["members"].is_array() {
+        document["workspace"]["members"] = Item::Value(Value::Array(Array::new()));
+    }
+
+    let members = document["workspace"]["members"]
+        .as_array_mut()
+        .ok_or_else(|| WorkspaceError::InvalidProjectLayout {
+            path: cargo_toml_path.clone(),
+            reason: "[workspace].members must be an array".to_string(),
+        })?;
+
+    let bounded_context_name = bounded_context.name.as_str();
+    let new_members = [
+        format!("crates/{bounded_context_name}/domain"),
+        format!("crates/{bounded_context_name}/application"),
+        format!("crates/{bounded_context_name}/infrastructure"),
+    ];
+
+    let mut inserted_any = false;
+    let mut is_first_inserted = true;
+
+    for member in new_members {
+        if !members.iter().any(|value| value.as_str() == Some(member.as_str())) {
+            let mut formatted = Value::from(member);
+            if is_first_inserted {
+                formatted
+                    .decor_mut()
+                    .set_prefix(&format!("\n    # {}{}\n    ",
+                        bounded_context_name.chars().next().unwrap_or('?').to_uppercase(),
+                        bounded_context_name.get(1..).unwrap_or("")));
+                is_first_inserted = false;
+            } else {
+                formatted.decor_mut().set_prefix("\n    ");
+            }
+
+            formatted.decor_mut().set_suffix("");
+            members.push_formatted(formatted);
+            inserted_any = true;
+        }
+    }
+
+    if inserted_any {
+        members.set_trailing_comma(true);
+        members.set_trailing("\n");
+    }
+
+    fs::write(&cargo_toml_path, document.to_string())
+        .map_err(|error| map_fs_error(FsHelperError::Conflict {
+            path: cargo_toml_path,
+            reason: format!("Failed to write file: {error}"),
+        }))?;
+
+    Ok(())
+}
+
 pub fn scaffold_bounded_context(
     project: &mut Project,
     bounded_context: BoundedContext,
@@ -68,6 +144,8 @@ pub fn scaffold_bounded_context(
         remove_dir(&temp_root);
         return Err(error);
     }
+
+    upsert_root_workspace_members(project, &bounded_context)?;
 
     project.add_bounded_context(bounded_context)
 }

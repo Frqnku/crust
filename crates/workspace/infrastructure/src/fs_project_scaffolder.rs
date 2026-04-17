@@ -123,6 +123,37 @@ mod tests {
         assert_layer_workspace(&bounded_context_path.join("application"));
         assert_layer_workspace(&bounded_context_path.join("domain"));
         assert_layer_workspace(&bounded_context_path.join("infrastructure"));
+
+        let root_cargo_toml = fs::read_to_string(project.path.join("Cargo.toml"))
+            .expect("root Cargo.toml should be readable");
+        assert!(
+            root_cargo_toml.contains("\"crates/sales/domain\""),
+            "root Cargo.toml should include domain workspace member"
+        );
+        assert!(
+            root_cargo_toml.contains("\"crates/sales/application\""),
+            "root Cargo.toml should include application workspace member"
+        );
+        assert!(
+            root_cargo_toml.contains("\"crates/sales/infrastructure\""),
+            "root Cargo.toml should include infrastructure workspace member"
+        );
+        assert!(
+            root_cargo_toml.contains("\n    \"crates/sales/domain\",\n"),
+            "domain workspace member should be on its own line with trailing comma"
+        );
+        assert!(
+            root_cargo_toml.contains("\n    \"crates/sales/application\",\n"),
+            "application workspace member should be on its own line with trailing comma"
+        );
+        assert!(
+            root_cargo_toml.contains("\n    \"crates/sales/infrastructure\",\n"),
+            "infrastructure workspace member should be on its own line with trailing comma"
+        );
+        assert!(
+            !root_cargo_toml.contains("\n, \"crates/sales/domain\""),
+            "workspace members must not be rendered with a leading comma"
+        );
     }
 
     #[test]
