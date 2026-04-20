@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 scaffolding_domain = { path = "../domain" }
+shared_infrastructure = { path = "../../shared/infrastructure" }

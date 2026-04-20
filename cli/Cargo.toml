@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 workspace_application = { path = "../crates/workspace/application" }
 workspace_infrastructure = { path = "../crates/workspace/infrastructure" }
+scaffolding_domain = { path = "../crates/scaffolding/domain" }
+scaffolding_application = { path = "../crates/scaffolding/application" }
+scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure" }
