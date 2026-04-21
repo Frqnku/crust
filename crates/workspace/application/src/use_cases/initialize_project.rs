@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, rc::Rc};
 
 use workspace_domain::{
     entities::{
@@ -19,16 +19,16 @@ impl InitializeProjectInput {
     }
 }
 
-pub struct InitializeProject<'a> {
-    scaffolder: &'a mut dyn ProjectScaffolder,
+pub struct InitializeProject {
+    scaffolder: Rc<dyn ProjectScaffolder>,
 }
 
-impl<'a> InitializeProject<'a> {
-    pub fn new(scaffolder: &'a mut dyn ProjectScaffolder) -> Self {
+impl InitializeProject {
+    pub fn new(scaffolder: Rc<dyn ProjectScaffolder>) -> Self {
         Self { scaffolder }
     }
 
-    pub fn execute(&mut self, input: InitializeProjectInput) -> Result<Project, WorkspaceError> {
+    pub fn execute(&self, input: InitializeProjectInput) -> Result<Project, WorkspaceError> {
         self.scaffolder.create_project(input.name, input.path)
     }
 }

@@ -1,3 +1,4 @@
+use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
 use shared_domain::errors::SharedError;
 
@@ -19,3 +20,27 @@ impl From<SharedError> for WorkspaceError {
         }
     }
 }
+
+impl Display for WorkspaceError {
+    fn fmt(&self, formatter: &mut Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::ProjectStructureConflict { path, reason } => {
+                write!(formatter, "Project structure conflict at '{}': {reason}", path.display())
+            }
+            Self::InvalidProjectLayout { path, reason } => {
+                write!(formatter, "Invalid project layout at '{}': {reason}", path.display())
+            }
+            Self::InvalidProjectName { value, reason } => {
+                write!(formatter, "Invalid project name '{value}': {reason}")
+            }
+            Self::InvalidBoundedContextName { value, reason } => {
+                write!(formatter, "Invalid bounded context name '{value}': {reason}")
+            }
+            Self::BoundedContextAlreadyExists { path } => {
+                write!(formatter, "Bounded context already exists at '{}'", path.display())
+            }
+        }
+    }
+}
+
+impl std::error::Error for WorkspaceError {}

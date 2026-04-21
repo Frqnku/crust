@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, rc::Rc};
 
 use scaffolding_domain::{
 	artifact_entity::{Artifact, ArtifactScaffolder},
@@ -30,16 +30,16 @@ impl CreateArtifactInput {
 	}
 }
 
-pub struct CreateArtifact<'a> {
-	scaffolder: &'a mut dyn ArtifactScaffolder,
+pub struct CreateArtifact {
+	scaffolder: Rc<dyn ArtifactScaffolder>,
 }
 
-impl<'a> CreateArtifact<'a> {
-	pub fn new(scaffolder: &'a mut dyn ArtifactScaffolder) -> Self {
+impl CreateArtifact {
+	pub fn new(scaffolder: Rc<dyn ArtifactScaffolder>) -> Self {
 		Self { scaffolder }
 	}
 
-	pub fn execute(&mut self, input: CreateArtifactInput) -> Result<(), ScaffoldingError> {
+	pub fn execute(&self, input: CreateArtifactInput) -> Result<(), ScaffoldingError> {
 		let bounded_context = BoundedContext::new(input.bounded_context_name)?;
 		let artifact = Artifact::new(bounded_context, input.kind, input.artifact_name)?;
 		self.scaffolder.create_artifact(&input.project_root, artifact)

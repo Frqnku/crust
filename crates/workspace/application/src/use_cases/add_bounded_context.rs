@@ -1,4 +1,4 @@
-use std::path::PathBuf;
+use std::{path::PathBuf, rc::Rc};
 
 use workspace_domain::{
 	entities::{
@@ -25,16 +25,16 @@ impl AddBoundedContextInput {
 	}
 }
 
-pub struct AddBoundedContext<'a> {
-	scaffolder: &'a mut dyn ProjectScaffolder,
+pub struct AddBoundedContext {
+	scaffolder: Rc<dyn ProjectScaffolder>,
 }
 
-impl<'a> AddBoundedContext<'a> {
-	pub fn new(scaffolder: &'a mut dyn ProjectScaffolder) -> Self {
+impl AddBoundedContext {
+	pub fn new(scaffolder: Rc<dyn ProjectScaffolder>) -> Self {
 		Self { scaffolder }
 	}
 
-	pub fn execute(&mut self, input: AddBoundedContextInput) -> Result<(), WorkspaceError> {
+	pub fn execute(&self, input: AddBoundedContextInput) -> Result<(), WorkspaceError> {
 		let mut project = Project::new(input.project_name, input.project_path)?;
 		let bounded_context = BoundedContext::new(input.bounded_context_name)?;
 		self.scaffolder.create_bounded_context(&mut project, bounded_context)

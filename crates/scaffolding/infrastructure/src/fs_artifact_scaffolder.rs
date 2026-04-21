@@ -6,7 +6,7 @@ use crate::scaffold_artifact::scaffold_artifact;
 pub struct FsArtifactScaffolder;
 
 impl ArtifactScaffolder for FsArtifactScaffolder {
-    fn create_artifact(&mut self, project_root: &Path, artifact: Artifact) -> Result<(), ScaffoldingError> {
+    fn create_artifact(&self, project_root: &Path, artifact: Artifact) -> Result<(), ScaffoldingError> {
         scaffold_artifact(project_root, artifact)
     }
 }

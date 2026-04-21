@@ -33,5 +33,5 @@ impl Artifact {
 }
 
 pub trait ArtifactScaffolder {
-    fn create_artifact(&mut self, project_root: &Path, artifact: Artifact) -> Result<(), ScaffoldingError>;
+    fn create_artifact(&self, project_root: &Path, artifact: Artifact) -> Result<(), ScaffoldingError>;
 }
