@@ -1,4 +1,5 @@
 use std::fmt::{Display, Formatter};
+use std::path::PathBuf;
 use shared_domain::errors::SharedError;
 
 #[derive(Debug, PartialEq)]
@@ -8,6 +9,18 @@ pub enum ScaffoldingError {
     InvalidArtifactKind { value: String, reason: String },
     ArtifactAlreadyExists { name: String, bounded_context: String },
     BoundedContextNotFound { name: String },
+    ArtifactIoConflict {
+        name: String,
+        bounded_context: String,
+        path: PathBuf,
+        reason: String,
+    },
+    ArtifactInvalidLayout {
+        name: String,
+        bounded_context: String,
+        path: PathBuf,
+        reason: String,
+    },
     ArtifactRollbackFailed { name: String, bounded_context: String, reason: String },
 }
 
@@ -38,6 +51,20 @@ impl Display for ScaffoldingError {
             }
             Self::BoundedContextNotFound { name } => {
                 write!(formatter, "Bounded context '{name}' was not found")
+            }
+            Self::ArtifactIoConflict { name, bounded_context, path, reason } => {
+                write!(
+                    formatter,
+                    "Artifact '{name}' in bounded context '{bounded_context}' failed at '{}': {reason}",
+                    path.display()
+                )
+            }
+            Self::ArtifactInvalidLayout { name, bounded_context, path, reason } => {
+                write!(
+                    formatter,
+                    "Artifact '{name}' in bounded context '{bounded_context}' has invalid layout at '{}': {reason}",
+                    path.display()
+                )
             }
             Self::ArtifactRollbackFailed { name, bounded_context, reason } => {
                 write!(formatter, "Failed to roll back artifact '{name}' in bounded context '{bounded_context}': {reason}")

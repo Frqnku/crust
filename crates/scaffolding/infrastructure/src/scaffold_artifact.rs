@@ -13,11 +13,18 @@ use crate::templates::usecase::USECASE_CONTENT;
 
 fn map_fs_error(error: FsHelperError, artifact: &Artifact) -> ScaffoldingError {
 	match error {
-		FsHelperError::Conflict { .. } | FsHelperError::InvalidLayout { .. } => {
-			ScaffoldingError::BoundedContextNotFound {
-				name: artifact.bounded_context.name.as_str().to_string(),
-			}
-		}
+		FsHelperError::Conflict { path, reason } => ScaffoldingError::ArtifactIoConflict {
+			name: artifact.name.as_str().to_string(),
+			bounded_context: artifact.bounded_context.name.as_str().to_string(),
+			path,
+			reason,
+		},
+		FsHelperError::InvalidLayout { path, reason } => ScaffoldingError::ArtifactInvalidLayout {
+			name: artifact.name.as_str().to_string(),
+			bounded_context: artifact.bounded_context.name.as_str().to_string(),
+			path,
+			reason,
+		},
 	}
 }
 
