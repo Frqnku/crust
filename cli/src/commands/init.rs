@@ -4,17 +4,17 @@ use workspace_application::use_cases::initialize_project::{
 };
 use workspace_infrastructure::fs_project_scaffolder::FsProjectScaffolder;
 
-pub fn handle(name: Option<&str>) {
-    let current_dir = match std::env::current_dir() {
-        Ok(path) => path,
-        Err(e) => {
-            eprintln!("Error resolving current directory: {}", e);
-            return;
-        }
-    };
+use crate::error::CliError;
+use crate::helper::current_dir;
+
+pub fn handle(name: Option<String>) -> Result<(), CliError> {
+    let current_dir = current_dir()?;
 
     let (name, path) = match name {
-        Some(name) => (name.to_string(), current_dir.join(name)),
+        Some(name) => {
+            let path = current_dir.join(&name);
+            (name, path)
+        }
         None => {
             let name = current_dir
                 .file_name()
@@ -29,7 +29,17 @@ pub fn handle(name: Option<&str>) {
     let input = InitializeProjectInput::new(name, path);
 
     match use_case.execute(input) {
-        Ok(project) => println!("Project '{}' initialized at '{}'", project.name, project.path.display()),
-        Err(e) => eprintln!("Error initializing project: {:?}", e),
+        Ok(project) => {
+            println!(
+                "Project '{}' initialized at '{}'",
+                project.name,
+                project.path.display()
+            );
+            Ok(())
+        }
+        Err(error) => Err(CliError::OperationFailed(format!(
+            "Error initializing project: {:?}",
+            error
+        ))),
     }
 }

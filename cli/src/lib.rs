@@ -1,6 +1,6 @@
+pub mod run;
+pub use run::run;
+pub mod parser;
+pub mod error;
+pub mod helper;
 pub mod commands;
-
-pub fn run() {
-    let arg = Some("my_project"); // Example argument, replace with actual CLI parsing
-    commands::init::handle(arg);
-}

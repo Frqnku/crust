@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+clap = { version = "4.5", features = ["derive"] }
 workspace_application = { path = "../crates/workspace/application" }
 workspace_infrastructure = { path = "../crates/workspace/infrastructure" }
 scaffolding_domain = { path = "../crates/scaffolding/domain" }
