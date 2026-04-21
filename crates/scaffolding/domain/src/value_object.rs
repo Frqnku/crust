@@ -1,5 +1,12 @@
 use crate::errors::ScaffoldingError;
 
+const RUST_RESERVED_KEYWORDS: &[&str] = &[
+    "as", "break", "const", "continue", "crate", "else", "enum", "extern", "false", "fn",
+    "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub",
+    "ref", "return", "self", "Self", "static", "struct", "super", "trait", "true", "type",
+    "unsafe", "use", "where", "while", "async", "await", "dyn",
+];
+
 pub enum ArtifactKind {
     QueryUsecase,
     CommandUsecase,
@@ -33,6 +40,13 @@ impl ArtifactName {
             });
         }
 
+        if RUST_RESERVED_KEYWORDS.contains(&value.as_str()) {
+            return Err(ScaffoldingError::InvalidArtifactName {
+                value,
+                reason: "name is a reserved Rust keyword; choose a different identifier".to_string(),
+            });
+        }
+
         if value.chars().any(|character| character == '/' || character == '\\') {
             return Err(ScaffoldingError::InvalidArtifactName {
                 value,
@@ -40,13 +54,21 @@ impl ArtifactName {
             });
         }
 
+        let first = value.chars().next().expect("value is guaranteed to be non-empty");
+        if !first.is_ascii_lowercase() && first != '_' {
+            return Err(ScaffoldingError::InvalidArtifactName {
+                value,
+                reason: "name must start with a lowercase ASCII letter or underscore".to_string(),
+            });
+        }
+
         if !value
             .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '_' || character == '-')
+            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '_')
         {
             return Err(ScaffoldingError::InvalidArtifactName {
                 value,
-                reason: "name must use lowercase ASCII letters, digits, underscore, or hyphen".to_string(),
+                reason: "name must use only lowercase ASCII letters, digits, or underscore".to_string(),
             });
         }
 
