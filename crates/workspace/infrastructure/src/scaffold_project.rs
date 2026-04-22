@@ -58,7 +58,7 @@ fn create_project_setup(project: &Project, scaffold_root: &Path) -> Result<(), W
     let bin_path = scaffold_root.join("bin");
     create_dir(&bin_path).map_err(map_fs_error)?;
 
-    let bin_cargo_toml = BIN_CARGO_TOML.replace("{bin_name}", project.name.as_str());
+    let bin_cargo_toml = BIN_CARGO_TOML.replace("{bin_name}", project.name().as_str());
     create_file(&bin_path.join("Cargo.toml"), &bin_cargo_toml).map_err(map_fs_error)?;
     create_file(&bin_path.join("main.rs"), MAIN_RS_CONTENT).map_err(map_fs_error)?;
 

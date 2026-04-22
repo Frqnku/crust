@@ -27,8 +27,8 @@ pub fn handle(initialize_project: &InitializeProject, args: InitArgs) -> Result<
 
 	println!(
 		"Project '{}' initialized at '{}'",
-		project.name,
-		project.path.display()
+		project.name(),
+		project.path().display()
 	);
 	Ok(())
 }

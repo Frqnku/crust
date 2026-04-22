@@ -80,7 +80,7 @@ fn create_layer_workspace(
     create_dir(&workspace_path).map_err(map_fs_error)?;
     let src_path = workspace_path.join("src");
     create_dir(&src_path).map_err(map_fs_error)?;
-    let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name.as_str());
+    let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name().as_str());
     create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(map_fs_error)?;
 
     if workspace_layer_name == APPLICATION_LAYER {
@@ -93,7 +93,7 @@ fn create_layer_workspace(
 }
 
 fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedContext) -> Result<(), WorkspaceError> {
-    let cargo_toml_path = project.path.join("Cargo.toml");
+    let cargo_toml_path = project.path().join("Cargo.toml");
     let cargo_toml_content = fs::read_to_string(&cargo_toml_path)
         .map_err(|error| map_fs_error(FsHelperError::Conflict {
             path: cargo_toml_path.clone(),
@@ -122,12 +122,12 @@ fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedCon
             reason: "[workspace].members must be an array".to_string(),
         })?;
 
-    let new_members = context_member_paths(bounded_context.name.as_str());
+    let new_members = context_member_paths(bounded_context.name().as_str());
 
     let mut inserted_any = false;
     let mut is_first_inserted = true;
     for member in new_members {
-        let prefix = bounded_context_member_prefix(is_first_inserted, bounded_context.name.as_str());
+        let prefix = bounded_context_member_prefix(is_first_inserted, bounded_context.name().as_str());
         if add_member_if_missing(members, &member, &prefix) {
             inserted_any = true;
             is_first_inserted = false;

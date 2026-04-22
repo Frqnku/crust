@@ -4,9 +4,9 @@ use std::path::Path;
 use crate::{errors::ScaffoldingError, value_object::{ArtifactKind, ArtifactName}};
 
 pub struct Artifact {
-    pub bounded_context: BoundedContext,
-    pub kind: ArtifactKind,
-    pub name: ArtifactName,
+    bounded_context: BoundedContext,
+    kind: ArtifactKind,
+    name: ArtifactName,
 }
 
 impl Artifact {
@@ -22,12 +22,24 @@ impl Artifact {
         format!("{}.rs", self.name.as_str())
     }
 
+    pub fn bounded_context(&self) -> &BoundedContext {
+        &self.bounded_context
+    }
+
+    pub fn kind(&self) -> &ArtifactKind {
+        &self.kind
+    }
+
+    pub fn name(&self) -> &ArtifactName {
+        &self.name
+    }
+
     pub fn relative_directory(&self) -> String {
         format!(
             "{}/{}/src/{}",
-            self.bounded_context.name.as_str(),
-            self.kind.parent_directory(),
-            self.kind.as_str()
+            self.bounded_context().name().as_str(),
+            self.kind().parent_directory(),
+            self.kind().as_str()
         )
     }
 }

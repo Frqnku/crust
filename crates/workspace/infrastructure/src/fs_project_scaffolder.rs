@@ -93,13 +93,13 @@ mod tests {
             .create_project("demo".to_string(), project_path.clone())
             .expect("project should be created");
 
-        assert_eq!(project.path, project_path);
-        assert_contains_exactly(&project.path, &["Cargo.toml", "bin", "crates"]);
-        assert!(project.path.join("Cargo.toml").is_file());
-        assert!(project.path.join("bin").is_dir());
-        assert!(project.path.join("bin").join("Cargo.toml").is_file());
-        assert!(project.path.join("bin").join("main.rs").is_file());
-        assert!(project.path.join("crates").is_dir());
+        assert_eq!(project.path(), &project_path);
+        assert_contains_exactly(project.path(), &["Cargo.toml", "bin", "crates"]);
+        assert!(project.path().join("Cargo.toml").is_file());
+        assert!(project.path().join("bin").is_dir());
+        assert!(project.path().join("bin").join("Cargo.toml").is_file());
+        assert!(project.path().join("bin").join("main.rs").is_file());
+        assert!(project.path().join("crates").is_dir());
     }
 
     #[test]
@@ -139,7 +139,7 @@ mod tests {
             "application lib.rs should export command module"
         );
 
-        let root_cargo_toml = fs::read_to_string(project.path.join("Cargo.toml"))
+        let root_cargo_toml = fs::read_to_string(project.path().join("Cargo.toml"))
             .expect("root Cargo.toml should be readable");
         assert!(
             root_cargo_toml.contains("# Sales"),
@@ -200,6 +200,6 @@ mod tests {
                 path: project.bounded_context_root("sales"),
             }
         );
-        assert_eq!(project.bounded_contexts.len(), 1);
+        assert_eq!(project.bounded_contexts().len(), 1);
     }
 }

@@ -55,9 +55,9 @@ impl fmt::Display for ProjectName {
 
 #[derive(Debug, Clone)]
 pub struct Project {
-    pub name: ProjectName,
-    pub path: PathBuf,
-    pub bounded_contexts: Vec<BoundedContext>,
+    name: ProjectName,
+    path: PathBuf,
+    bounded_contexts: Vec<BoundedContext>,
 }
 
 impl Project {
@@ -73,14 +73,26 @@ impl Project {
         self.path.join("crates")
     }
 
+    pub fn name(&self) -> &ProjectName {
+        &self.name
+    }
+
+    pub fn path(&self) -> &PathBuf {
+        &self.path
+    }
+
+    pub fn bounded_contexts(&self) -> &[BoundedContext] {
+        &self.bounded_contexts
+    }
+
     pub fn bounded_context_root(&self, bounded_context_name: &str) -> PathBuf {
         self.expected_crates_path().join(bounded_context_name)
     }
 
     pub fn ensure_can_create_bounded_context(&self, bounded_context: &BoundedContext) -> Result<PathBuf, WorkspaceError> {
-        let path = self.bounded_context_root(bounded_context.name.as_str());
+        let path = self.bounded_context_root(bounded_context.name().as_str());
 
-        if self.bounded_contexts.iter().any(|context| context.name == bounded_context.name) {
+        if self.bounded_contexts.iter().any(|context| context.name() == bounded_context.name()) {
             return Err(WorkspaceError::BoundedContextAlreadyExists { path });
         }
 

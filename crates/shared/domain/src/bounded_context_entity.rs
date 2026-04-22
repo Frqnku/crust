@@ -52,7 +52,7 @@ impl fmt::Display for BoundedContextName {
 
 #[derive(Debug, Clone)]
 pub struct BoundedContext {
-    pub name: BoundedContextName,
+    name: BoundedContextName,
 }
 
 impl BoundedContext {
@@ -60,5 +60,9 @@ impl BoundedContext {
         Ok(Self {
             name: BoundedContextName::new(name)?,
         })
+    }
+
+    pub fn name(&self) -> &BoundedContextName {
+        &self.name
     }
 }
