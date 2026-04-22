@@ -148,6 +148,13 @@ fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedCon
     Ok(())
 }
 
+fn rollback_bounded_context(path: &Path) -> Result<(), WorkspaceError> {
+    fs::remove_dir_all(path).map_err(|error| WorkspaceError::BoundedContextRollbackFailed {
+        path: path.to_path_buf(),
+        reason: format!("failed to remove directory: {error}"),
+    })
+}
+
 pub fn scaffold_bounded_context(
     project: &mut Project,
     bounded_context: BoundedContext,
@@ -180,7 +187,10 @@ pub fn scaffold_bounded_context(
         return Err(error);
     }
 
-    upsert_root_workspace_members(project, &bounded_context)?;
+    if let Err(error) = upsert_root_workspace_members(project, &bounded_context) {
+        rollback_bounded_context(&bounded_context_path)?;
+        return Err(error);
+    }
 
     project.add_bounded_context(bounded_context)
 }

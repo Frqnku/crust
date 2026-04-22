@@ -9,6 +9,7 @@ pub enum WorkspaceError {
     InvalidProjectName { value: String, reason: String },
     InvalidBoundedContextName { value: String, reason: String },
     BoundedContextAlreadyExists { path: PathBuf },
+    BoundedContextRollbackFailed { path: PathBuf, reason: String },
 }
 
 impl From<SharedError> for WorkspaceError {
@@ -38,6 +39,9 @@ impl Display for WorkspaceError {
             }
             Self::BoundedContextAlreadyExists { path } => {
                 write!(formatter, "Bounded context already exists at '{}'", path.display())
+            }
+            Self::BoundedContextRollbackFailed { path, reason } => {
+                write!(formatter, "Failed to roll back bounded context at '{}': {reason}", path.display())
             }
         }
     }
