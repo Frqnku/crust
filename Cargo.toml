@@ -18,7 +18,11 @@ members = [
     "crates/config/infrastructure",
 
     # Shared
+    "crates/shared/domain",
     "crates/shared/infrastructure",
+
+    # CLI
+    "cli",
 
     # Binaries
     # main
