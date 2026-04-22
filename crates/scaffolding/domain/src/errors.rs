@@ -6,7 +6,6 @@ use shared_domain::errors::SharedError;
 pub enum ScaffoldingError {
     InvalidArtifactName { value: String, reason: String },
     InvalidBoundedContextName { value: String, reason: String },
-    InvalidArtifactKind { value: String, reason: String },
     ArtifactAlreadyExists { name: String, bounded_context: String },
     BoundedContextNotFound { name: String },
     ArtifactIoConflict {
@@ -42,9 +41,6 @@ impl Display for ScaffoldingError {
             }
             Self::InvalidBoundedContextName { value, reason } => {
                 write!(formatter, "Invalid bounded context name '{value}': {reason}")
-            }
-            Self::InvalidArtifactKind { value, reason } => {
-                write!(formatter, "Invalid artifact kind '{value}': {reason}")
             }
             Self::ArtifactAlreadyExists { name, bounded_context } => {
                 write!(formatter, "Artifact '{name}' already exists in bounded context '{bounded_context}'")
