@@ -39,12 +39,23 @@ fn add_member_if_missing(members: &mut Array, member: &str, prefix: &str) -> boo
     true
 }
 
+fn format_bounded_context_comment(name: &str) -> String {
+    let mut chars = name.chars();
+    match chars.next() {
+        Some(first) => {
+            let mut formatted = String::with_capacity(name.len());
+            formatted.extend(first.to_uppercase());
+            formatted.push_str(chars.as_str());
+            formatted
+        }
+        None => "---".to_string(),
+    }
+}
+
 fn bounded_context_member_prefix(is_first_member: bool, bounded_context_name: &str) -> String {
     if is_first_member {
-        format!("\n\n    # {}{}\n    ",
-            bounded_context_name.chars().next().unwrap_or('?').to_uppercase(),
-            &bounded_context_name[1..]
-        )
+        let comment = format_bounded_context_comment(bounded_context_name);
+        format!("\n\n    # {comment}\n    ")
     } else {
         "\n    ".to_string()
     }
