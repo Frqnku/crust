@@ -1,4 +1,4 @@
-use clap::{ArgGroup, Args, Parser, Subcommand};
+use clap::{Args, Parser, Subcommand};
 
 #[derive(Debug, Parser)]
 #[command(name = "crust")]
@@ -31,28 +31,65 @@ pub struct NewArgs {
 }
 
 #[derive(Debug, Args)]
-#[command(group(
-	ArgGroup::new("artifact_type")
-		.required(true)
-		.args(["query", "command", "infrastructure_tech", "feature"])
-))]
 pub struct AddArgs {
+	#[command(subcommand)]
+	pub kind: AddSubcommand,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum AddSubcommand {
+	/// Create a query use-case artifact
+	Query(AddTargetArgs),
+	/// Create a command use-case artifact
+	Command(AddTargetArgs),
+	/// Create infrastructure technology folder (e.g. kafka, postgre)
+	Tech(AddTargetArgs),
+	/// Create domain feature folder inside the bounded context domain layer
+	Feature(AddTargetArgs),
+	/// Alternative ordering: add in <context> <kind> <name>
+	In(AddInArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct AddTargetArgs {
+	/// Artifact/feature/tech name to create
+	pub name: String,
+
+	/// Target bounded context name
+	#[arg(short = 'c', long = "context")]
+	pub bounded_context: Option<String>,
+
+	/// Natural-language separator keyword
+	#[arg(value_parser = ["in"])]
+	pub in_keyword: Option<String>,
+
+	/// Target bounded context name when using "in" syntax
+	pub bounded_context_after_in: Option<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct AddInArgs {
 	/// Target bounded context name
 	pub bounded_context: String,
 
+	#[command(subcommand)]
+	pub kind: AddInSubcommand,
+}
+
+#[derive(Debug, Subcommand)]
+pub enum AddInSubcommand {
 	/// Create a query use-case artifact
-	#[arg(short = 'q', long = "query")]
-	pub query: Option<String>,
-
+	Query(AddNameArgs),
 	/// Create a command use-case artifact
-	#[arg(short = 'c', long = "command")]
-	pub command: Option<String>,
-
+	Command(AddNameArgs),
 	/// Create infrastructure technology folder (e.g. kafka, postgre)
-	#[arg(short = 't', long = "tech")]
-	pub infrastructure_tech: Option<String>,
-
+	Tech(AddNameArgs),
 	/// Create domain feature folder inside the bounded context domain layer
-	#[arg(short = 'f', long = "feature")]
-	pub feature: Option<String>,
+	Feature(AddNameArgs),
+}
+
+#[derive(Debug, Args)]
+pub struct AddNameArgs {
+	/// Artifact/feature/tech name to create
+	pub name: String,
 }
