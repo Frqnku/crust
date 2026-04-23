@@ -4,9 +4,9 @@ use scaffolding_domain::{
 	artifact_entity::Artifact,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::fs_helper::{create_dir, create_file, map_fs_error};
+use shared_infrastructure::fs_helper::{create_dir, create_file};
 
-use crate::fs_scaffold_helper::{rollback_created_directory, upsert_mod_declaration};
+use crate::fs_scaffold_helper::{map_artifact_fs_error, rollback_created_directory, upsert_mod_declaration};
 
 fn rollback_infrastructure_tech(tech_directory_path: &Path, infrastructure_tech: &Artifact) -> Result<(), ScaffoldingError> {
 	rollback_created_directory(tech_directory_path)
@@ -44,63 +44,15 @@ pub fn scaffold_infrastructure_tech(
 		});
 	}
 
-	create_dir(&tech_directory_path).map_err(|error| {
-		map_fs_error(
-			error,
-			|path, reason| ScaffoldingError::ArtifactIoConflict {
-				name: infrastructure_tech.name().as_str().to_string(),
-				bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-				path,
-				reason,
-			},
-			|path, reason| ScaffoldingError::ArtifactInvalidLayout {
-				name: infrastructure_tech.name().as_str().to_string(),
-				bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-				path,
-				reason,
-			},
-		)
-	})?;
+	create_dir(&tech_directory_path).map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
 
 	let mod_file_path = tech_directory_path.join("mod.rs");
 	create_file(&mod_file_path, "")
-		.map_err(|error| {
-			map_fs_error(
-				error,
-				|path, reason| ScaffoldingError::ArtifactIoConflict {
-					name: infrastructure_tech.name().as_str().to_string(),
-					bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-				|path, reason| ScaffoldingError::ArtifactInvalidLayout {
-					name: infrastructure_tech.name().as_str().to_string(),
-					bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-			)
-		})?;
+		.map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
 
 	let infrastructure_lib_path = infrastructure_src_directory.join("lib.rs");
 	if let Err(error) = upsert_mod_declaration(&infrastructure_lib_path, infrastructure_tech.name().as_str(), "pub mod")
-		.map_err(|error| {
-			map_fs_error(
-				error,
-				|path, reason| ScaffoldingError::ArtifactIoConflict {
-					name: infrastructure_tech.name().as_str().to_string(),
-					bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-				|path, reason| ScaffoldingError::ArtifactInvalidLayout {
-					name: infrastructure_tech.name().as_str().to_string(),
-					bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-			)
-		})
+		.map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))
 	{
 		rollback_infrastructure_tech(&tech_directory_path, &infrastructure_tech)?;
 		return Err(error);

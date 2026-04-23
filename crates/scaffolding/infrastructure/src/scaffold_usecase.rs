@@ -6,10 +6,9 @@ use scaffolding_domain::{
 };
 use shared_infrastructure::fs_helper::{
 	create_file,
-	map_fs_error,
 };
 use crate::templates::usecase::USECASE_CONTENT;
-use crate::fs_scaffold_helper::{rollback_created_file, upsert_mod_declaration};
+use crate::fs_scaffold_helper::{map_artifact_fs_error, rollback_created_file, upsert_mod_declaration};
 
 fn rollback_usecase_file(usecase_path: &Path, usecase: &Artifact) -> Result<(), ScaffoldingError> {
 	rollback_created_file(usecase_path).map_err(|error| ScaffoldingError::ArtifactRollbackFailed {
@@ -38,43 +37,11 @@ pub fn scaffold_usecase(project_root: &Path, usecase: Artifact) -> Result<(), Sc
 	}
 
 	let usecase_content = USECASE_CONTENT.replace("{usecase_name}", &usecase.name().to_pascal_case());
-	create_file(&usecase_path, &usecase_content).map_err(|error| {
-		map_fs_error(
-			error,
-			|path, reason| ScaffoldingError::ArtifactIoConflict {
-				name: usecase.name().as_str().to_string(),
-				bounded_context: usecase.bounded_context().name().as_str().to_string(),
-				path,
-				reason,
-			},
-			|path, reason| ScaffoldingError::ArtifactInvalidLayout {
-				name: usecase.name().as_str().to_string(),
-				bounded_context: usecase.bounded_context().name().as_str().to_string(),
-				path,
-				reason,
-			},
-		)
-	})?;
+	create_file(&usecase_path, &usecase_content).map_err(|error| map_artifact_fs_error(error, &usecase))?;
 
 	let mod_file_path = usecase_directory.join("mod.rs");
 	if let Err(error) = upsert_mod_declaration(&mod_file_path, usecase.name().as_str(), "pub mod")
-		.map_err(|error| {
-			map_fs_error(
-				error,
-				|path, reason| ScaffoldingError::ArtifactIoConflict {
-					name: usecase.name().as_str().to_string(),
-					bounded_context: usecase.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-				|path, reason| ScaffoldingError::ArtifactInvalidLayout {
-					name: usecase.name().as_str().to_string(),
-					bounded_context: usecase.bounded_context().name().as_str().to_string(),
-					path,
-					reason,
-				},
-			)
-		})
+		.map_err(|error| map_artifact_fs_error(error, &usecase))
 	{
 		rollback_usecase_file(&usecase_path, &usecase)?;
 		return Err(error);

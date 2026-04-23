@@ -1,6 +1,7 @@
 use std::{fs, path::Path};
 
-use shared_infrastructure::fs_helper::{io_conflict, FsHelperError};
+use scaffolding_domain::{artifact_entity::Artifact, errors::ScaffoldingError};
+use shared_infrastructure::fs_helper::{FsHelperError, io_conflict, map_fs_error};
 
 pub fn upsert_mod_declaration(
 	mod_file_path: &Path,
@@ -35,4 +36,22 @@ pub fn rollback_created_file(path: &Path) -> Result<(), std::io::Error> {
 
 pub fn rollback_created_directory(path: &Path) -> Result<(), std::io::Error> {
 	fs::remove_dir_all(path)
+}
+
+pub fn map_artifact_fs_error(error: FsHelperError, artifact: &Artifact) -> ScaffoldingError {
+	map_fs_error(
+		error,
+		|path, reason| ScaffoldingError::ArtifactIoConflict {
+			name: artifact.name().as_str().to_string(),
+			bounded_context: artifact.bounded_context().name().as_str().to_string(),
+			path,
+			reason,
+		},
+		|path, reason| ScaffoldingError::ArtifactInvalidLayout {
+			name: artifact.name().as_str().to_string(),
+			bounded_context: artifact.bounded_context().name().as_str().to_string(),
+			path,
+			reason,
+		},
+	)
 }
