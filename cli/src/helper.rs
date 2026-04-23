@@ -1,5 +1,7 @@
 use crate::error::CliError;
+use std::fs;
 use std::path::{Path, PathBuf};
+use toml_edit::Document;
 
 pub fn current_dir() -> Result<PathBuf, CliError> {
 	std::env::current_dir().map_err(CliError::CurrentDir)
@@ -7,8 +9,27 @@ pub fn current_dir() -> Result<PathBuf, CliError> {
 
 pub fn find_project_root(start: &Path) -> Option<PathBuf> {
 	for candidate in start.ancestors() {
-		if candidate.join("Cargo.toml").is_file() && candidate.join("crates").is_dir() {
-			return Some(candidate.to_path_buf());
+		let cargo_toml_path = candidate.join("Cargo.toml");
+		if !cargo_toml_path.is_file() {
+			continue;
+		}
+
+		// Try to parse the Cargo.toml
+		if let Ok(content) = fs::read_to_string(&cargo_toml_path) {
+			if let Ok(doc) = content.parse::<Document<String>>() {
+				// Look for [workspace] section with [workspace.metadata.crust] version = "1"
+				if let Some(workspace) = doc.get("workspace").and_then(|w| w.as_table()) {
+					if let Some(metadata) = workspace.get("metadata").and_then(|m| m.as_table()) {
+						if let Some(crust) = metadata.get("crust").and_then(|c| c.as_table()) {
+							if let Some(version) = crust.get("version").and_then(|v| v.as_str()) {
+								if version == "1" {
+									return Some(candidate.to_path_buf());
+								}
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 

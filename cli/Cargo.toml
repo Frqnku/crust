@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+toml_edit.workspace = true
 clap = { version = "4.5", features = ["derive"] }
 scaffolding_application = { path = "../crates/scaffolding/application" }
 scaffolding_domain = { path = "../crates/scaffolding/domain" }

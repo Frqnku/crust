@@ -6,6 +6,9 @@ members = [
     # Bounded context crates
 ]
 
+[workspace.metadata.crust]
+version = "1"
+
 [workspace.dependencies]
 
 [profile.dev]
