@@ -34,7 +34,7 @@ pub struct NewArgs {
 #[command(group(
 	ArgGroup::new("artifact_type")
 		.required(true)
-		.args(["query", "command"])
+		.args(["query", "command", "infrastructure_tech"])
 ))]
 pub struct AddArgs {
 	/// Target bounded context name
@@ -47,4 +47,8 @@ pub struct AddArgs {
 	/// Create a command use-case artifact
 	#[arg(short = 'c', long = "command")]
 	pub command: Option<String>,
+
+	/// Create infrastructure technology folder (e.g. kafka, postgre)
+	#[arg(short = 't', long = "tech")]
+	pub infrastructure_tech: Option<String>,
 }

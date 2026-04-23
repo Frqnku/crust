@@ -35,12 +35,19 @@ impl Artifact {
     }
 
     pub fn relative_directory(&self) -> String {
-        format!(
-            "{}/{}/src/{}",
-            self.bounded_context().name().as_str(),
-            self.kind().parent_directory(),
-            self.kind().as_str()
-        )
+        match self.kind() {
+            ArtifactKind::InfrastructureTech => format!(
+                "{}/{}/src",
+                self.bounded_context().name().as_str(),
+                self.kind().parent_directory()
+            ),
+            _ => format!(
+                "{}/{}/src/{}",
+                self.bounded_context().name().as_str(),
+                self.kind().parent_directory(),
+                self.kind().as_str()
+            ),
+        }
     }
 }
 

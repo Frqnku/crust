@@ -10,6 +10,7 @@ const RUST_RESERVED_KEYWORDS: &[&str] = &[
 pub enum ArtifactKind {
     QueryUsecase,
     CommandUsecase,
+    InfrastructureTech,
 }
 
 impl ArtifactKind {
@@ -17,6 +18,15 @@ impl ArtifactKind {
         match self {
             ArtifactKind::QueryUsecase => "query",
             ArtifactKind::CommandUsecase => "command",
+            ArtifactKind::InfrastructureTech => "tech",
+        }
+    }
+
+    pub fn display(&self) -> &str {
+        match self {
+            ArtifactKind::QueryUsecase => "Query usecase",
+            ArtifactKind::CommandUsecase => "Command usecase",
+            ArtifactKind::InfrastructureTech => "Infrastructure tech",
         }
     }
 
@@ -24,6 +34,7 @@ impl ArtifactKind {
         match self {
             ArtifactKind::QueryUsecase => "application",
             ArtifactKind::CommandUsecase => "application",
+            ArtifactKind::InfrastructureTech => "infrastructure",
         }
     }
 }
