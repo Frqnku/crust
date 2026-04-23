@@ -16,6 +16,21 @@ pub fn io_conflict(path: &Path, action: &str, error: std::io::Error) -> FsHelper
     }
 }
 
+pub fn map_fs_error<T, ConflictMapper, InvalidLayoutMapper>(
+    error: FsHelperError,
+    conflict_mapper: ConflictMapper,
+    invalid_layout_mapper: InvalidLayoutMapper,
+) -> T
+where
+    ConflictMapper: FnOnce(PathBuf, String) -> T,
+    InvalidLayoutMapper: FnOnce(PathBuf, String) -> T,
+{
+    match error {
+        FsHelperError::Conflict { path, reason } => conflict_mapper(path, reason),
+        FsHelperError::InvalidLayout { path, reason } => invalid_layout_mapper(path, reason),
+    }
+}
+
 pub fn create_dir(path: &Path) -> Result<(), FsHelperError> {
     fs::create_dir_all(path).map_err(|error| io_conflict(path, "create directory", error))
 }

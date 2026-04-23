@@ -1,5 +1,6 @@
 use std::fs;
 use std::path::Path;
+
 use toml_edit::{Array, DocumentMut, Item, Value};
 
 use shared_infrastructure::fs_helper::{
@@ -7,9 +8,12 @@ use shared_infrastructure::fs_helper::{
     create_file,
     create_unique_temp_dir,
     finalize_scaffold,
-    FsHelperError,
+    io_conflict,
+    map_fs_error,
     remove_dir,
+    FsHelperError,
 };
+
 use crate::templates::crates::WORKSPACE_TEMPLATES;
 
 use workspace_domain::{
@@ -61,24 +65,25 @@ fn bounded_context_member_prefix(is_first_member: bool, bounded_context_name: &s
     }
 }
 
+fn workspace_error_from_fs(error: FsHelperError) -> WorkspaceError {
+    map_fs_error(
+        error,
+        |path, reason| WorkspaceError::ProjectStructureConflict { path, reason },
+        |path, reason| WorkspaceError::InvalidProjectLayout { path, reason },
+    )
+}
+
 fn scaffold_application_sources(src_path: &Path) -> Result<(), WorkspaceError> {
     let query_path = src_path.join("query");
     let command_path = src_path.join("command");
 
-    create_dir(&query_path).map_err(map_fs_error)?;
-    create_dir(&command_path).map_err(map_fs_error)?;
-    create_file(&query_path.join("mod.rs"), "").map_err(map_fs_error)?;
-    create_file(&command_path.join("mod.rs"), "").map_err(map_fs_error)?;
-    create_file(&src_path.join("lib.rs"), "pub mod query;\npub mod command;\n").map_err(map_fs_error)?;
+    create_dir(&query_path).map_err(workspace_error_from_fs)?;
+    create_dir(&command_path).map_err(workspace_error_from_fs)?;
+    create_file(&query_path.join("mod.rs"), "").map_err(workspace_error_from_fs)?;
+    create_file(&command_path.join("mod.rs"), "").map_err(workspace_error_from_fs)?;
+    create_file(&src_path.join("lib.rs"), "pub mod query;\npub mod command;\n").map_err(workspace_error_from_fs)?;
 
     Ok(())
-}
-
-fn map_fs_error(error: FsHelperError) -> WorkspaceError {
-    match error {
-        FsHelperError::Conflict { path, reason } => WorkspaceError::ProjectStructureConflict { path, reason },
-        FsHelperError::InvalidLayout { path, reason } => WorkspaceError::InvalidProjectLayout { path, reason },
-    }
 }
 
 fn create_layer_workspace(
@@ -88,16 +93,16 @@ fn create_layer_workspace(
     cargo_toml_template: &str,
 ) -> Result<(), WorkspaceError> {
     let workspace_path = bounded_context_path.join(workspace_layer_name);
-    create_dir(&workspace_path).map_err(map_fs_error)?;
+    create_dir(&workspace_path).map_err(workspace_error_from_fs)?;
     let src_path = workspace_path.join("src");
-    create_dir(&src_path).map_err(map_fs_error)?;
+    create_dir(&src_path).map_err(workspace_error_from_fs)?;
     let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name().as_str());
-    create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(map_fs_error)?;
+    create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(workspace_error_from_fs)?;
 
     if workspace_layer_name == APPLICATION_LAYER {
         scaffold_application_sources(&src_path)?;
     } else {
-        create_file(&src_path.join("lib.rs"), "").map_err(map_fs_error)?;
+        create_file(&src_path.join("lib.rs"), "").map_err(workspace_error_from_fs)?;
     }
 
     Ok(())
@@ -106,10 +111,7 @@ fn create_layer_workspace(
 fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedContext) -> Result<(), WorkspaceError> {
     let cargo_toml_path = project.path().join("Cargo.toml");
     let cargo_toml_content = fs::read_to_string(&cargo_toml_path)
-        .map_err(|error| map_fs_error(FsHelperError::Conflict {
-            path: cargo_toml_path.clone(),
-            reason: format!("Failed to read file: {error}"),
-        }))?;
+        .map_err(|error| workspace_error_from_fs(io_conflict(&cargo_toml_path, "read file", error)))?;
 
     let mut document = cargo_toml_content
         .parse::<DocumentMut>()
@@ -151,10 +153,7 @@ fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedCon
     }
 
     fs::write(&cargo_toml_path, document.to_string())
-        .map_err(|error| map_fs_error(FsHelperError::Conflict {
-            path: cargo_toml_path,
-            reason: format!("Failed to write file: {error}"),
-        }))?;
+        .map_err(|error| workspace_error_from_fs(io_conflict(&cargo_toml_path, "write file", error)))?;
 
     Ok(())
 }
@@ -178,7 +177,7 @@ pub fn scaffold_bounded_context(
     }
 
     let temp_root_parent = project.expected_crates_path();
-    let temp_root = create_unique_temp_dir(&temp_root_parent, "crust-bounded-context").map_err(map_fs_error)?;
+    let temp_root = create_unique_temp_dir(&temp_root_parent, "crust-bounded-context").map_err(workspace_error_from_fs)?;
 
     let scaffold_result = (|| {
         for ws in WORKSPACE_TEMPLATES {
@@ -193,7 +192,7 @@ pub fn scaffold_bounded_context(
         return Err(error);
     }
 
-    if let Err(error) = finalize_scaffold(&temp_root, &bounded_context_path).map_err(map_fs_error) {
+    if let Err(error) = finalize_scaffold(&temp_root, &bounded_context_path).map_err(workspace_error_from_fs) {
         remove_dir(&temp_root);
         return Err(error);
     }
