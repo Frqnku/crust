@@ -34,7 +34,7 @@ pub struct NewArgs {
 #[command(group(
 	ArgGroup::new("artifact_type")
 		.required(true)
-		.args(["query", "command", "infrastructure_tech"])
+		.args(["query", "command", "infrastructure_tech", "feature"])
 ))]
 pub struct AddArgs {
 	/// Target bounded context name
@@ -51,4 +51,8 @@ pub struct AddArgs {
 	/// Create infrastructure technology folder (e.g. kafka, postgre)
 	#[arg(short = 't', long = "tech")]
 	pub infrastructure_tech: Option<String>,
+
+	/// Create domain feature folder inside the bounded context domain layer
+	#[arg(short = 'f', long = "feature")]
+	pub feature: Option<String>,
 }

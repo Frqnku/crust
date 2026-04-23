@@ -11,6 +11,7 @@ pub enum ArtifactKind {
     QueryUsecase,
     CommandUsecase,
     InfrastructureTech,
+    Domain,
 }
 
 impl ArtifactKind {
@@ -19,6 +20,7 @@ impl ArtifactKind {
             ArtifactKind::QueryUsecase => "query",
             ArtifactKind::CommandUsecase => "command",
             ArtifactKind::InfrastructureTech => "tech",
+            ArtifactKind::Domain => "domain",
         }
     }
 
@@ -27,6 +29,7 @@ impl ArtifactKind {
             ArtifactKind::QueryUsecase => "Query usecase",
             ArtifactKind::CommandUsecase => "Command usecase",
             ArtifactKind::InfrastructureTech => "Infrastructure tech",
+            ArtifactKind::Domain => "Domain",
         }
     }
 
@@ -35,6 +38,7 @@ impl ArtifactKind {
             ArtifactKind::QueryUsecase => "application",
             ArtifactKind::CommandUsecase => "application",
             ArtifactKind::InfrastructureTech => "infrastructure",
+            ArtifactKind::Domain => "domain",
         }
     }
 }

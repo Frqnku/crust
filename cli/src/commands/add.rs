@@ -6,13 +6,14 @@ use scaffolding_domain::value_object::ArtifactKind;
 
 pub fn handle(create_artifact: &CreateArtifact, args: AddArgs) -> Result<(), CliError> {
 	let project_root = resolve_project_root()?;
-	let (kind, artifact_name) = match (args.query, args.command, args.infrastructure_tech) {
-		(Some(name), None, None) => (ArtifactKind::QueryUsecase, name),
-		(None, Some(name), None) => (ArtifactKind::CommandUsecase, name),
-		(None, None, Some(name)) => (ArtifactKind::InfrastructureTech, name),
+	let (kind, artifact_name) = match (args.query, args.command, args.infrastructure_tech, args.feature) {
+		(Some(name), None, None, None) => (ArtifactKind::QueryUsecase, name),
+		(None, Some(name), None, None) => (ArtifactKind::CommandUsecase, name),
+		(None, None, Some(name), None) => (ArtifactKind::InfrastructureTech, name),
+		(None, None, None, Some(name)) => (ArtifactKind::Domain, name),
 		_ => {
 			return Err(CliError::OperationFailed(
-				"Exactly one flag is required: -q/--query, -c/--command, or -t/--tech".to_string(),
+				"Exactly one flag is required: -q/--query, -c/--command, -t/--tech, or -f/--feature".to_string(),
 			));
 		}
 	};

@@ -36,7 +36,7 @@ impl Artifact {
 
     pub fn relative_directory(&self) -> String {
         match self.kind() {
-            ArtifactKind::InfrastructureTech => format!(
+            ArtifactKind::InfrastructureTech | ArtifactKind::Domain => format!(
                 "{}/{}/src",
                 self.bounded_context().name().as_str(),
                 self.kind().parent_directory()
