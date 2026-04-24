@@ -46,6 +46,8 @@ pub enum AddSubcommand {
 	Tech(AddTargetArgs),
 	/// Create domain feature folder: add feature <name> in <context>
 	Feature(AddTargetArgs),
+	/// Create domain port file: add port <feature> <port_name> in <context>
+	Port(AddPortTargetArgs),
 	/// Add an artifact with the canonical syntax: add in <context> <kind> <name>
 	In(AddInArgs),
 }
@@ -54,6 +56,22 @@ pub enum AddSubcommand {
 pub struct AddTargetArgs {
 	/// Artifact/feature/tech name to create
 	pub name: String,
+
+	/// Natural-language separator keyword
+	#[arg(value_parser = ["in"])]
+	pub in_keyword: String,
+
+	/// Target bounded context name
+	pub bounded_context: String,
+}
+
+#[derive(Debug, Args)]
+pub struct AddPortTargetArgs {
+	/// Domain feature folder name
+	pub feature_name: String,
+
+	/// Domain port file name
+	pub port_name: String,
 
 	/// Natural-language separator keyword
 	#[arg(value_parser = ["in"])]
@@ -82,10 +100,21 @@ pub enum AddInSubcommand {
 	Tech(AddNameArgs),
 	/// Create domain feature folder inside the bounded context domain layer
 	Feature(AddNameArgs),
+	/// Create domain port file inside a domain feature folder
+	Port(AddPortNameArgs),
 }
 
 #[derive(Debug, Args)]
 pub struct AddNameArgs {
 	/// Artifact/feature/tech name to create
 	pub name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct AddPortNameArgs {
+	/// Domain feature folder name
+	pub feature_name: String,
+
+	/// Domain port file name
+	pub port_name: String,
 }

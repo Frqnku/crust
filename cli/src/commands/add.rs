@@ -3,6 +3,7 @@ use crate::helper::resolve_project_root;
 use crate::parser::{AddArgs, AddInSubcommand, AddSubcommand};
 use scaffolding_application::use_cases::{
 	create_domain_feature::{CreateDomainFeature, CreateDomainFeatureInput},
+	create_domain_port::{CreateDomainPort, CreateDomainPortInput},
 	create_infrastructure_tech::{CreateInfrastructureTech, CreateInfrastructureTechInput},
 	create_command_usecase::{CreateCommandUsecase, CreateCommandUsecaseInput},
 	create_query_usecase::{CreateQueryUsecase, CreateQueryUsecaseInput},
@@ -10,6 +11,7 @@ use scaffolding_application::use_cases::{
 
 pub fn handle(
 	create_domain_feature: &CreateDomainFeature,
+	create_domain_port: &CreateDomainPort,
 	create_infrastructure_tech: &CreateInfrastructureTech,
 	create_command_usecase: &CreateCommandUsecase,
 	create_query_usecase: &CreateQueryUsecase,
@@ -42,6 +44,17 @@ pub fn handle(
 				CliError::OperationFailed(format!("Error creating domain feature: {error}"))
 			})?;
 		}
+		AddSubcommand::Port(add_args) => {
+			let input = CreateDomainPortInput::new(
+				project_root,
+				add_args.bounded_context,
+				add_args.feature_name,
+				add_args.port_name,
+			);
+			create_domain_port.execute(input).map_err(|error| {
+				CliError::OperationFailed(format!("Error creating domain port: {error}"))
+			})?;
+		}
 		AddSubcommand::In(in_args) => match in_args.kind {
 			AddInSubcommand::Query(name_args) => {
 				let input = CreateQueryUsecaseInput::new(project_root, in_args.bounded_context, name_args.name);
@@ -65,6 +78,17 @@ pub fn handle(
 				let input = CreateDomainFeatureInput::new(project_root, in_args.bounded_context, name_args.name);
 				create_domain_feature.execute(input).map_err(|error| {
 					CliError::OperationFailed(format!("Error creating domain feature: {error}"))
+				})?;
+			}
+			AddInSubcommand::Port(name_args) => {
+				let input = CreateDomainPortInput::new(
+					project_root,
+					in_args.bounded_context,
+					name_args.feature_name,
+					name_args.port_name,
+				);
+				create_domain_port.execute(input).map_err(|error| {
+					CliError::OperationFailed(format!("Error creating domain port: {error}"))
 				})?;
 			}
 		},
