@@ -1,59 +1,74 @@
 use crate::error::CliError;
 use crate::helper::resolve_project_root;
-use crate::parser::{AddArgs, AddInSubcommand, AddSubcommand, AddTargetArgs};
-use scaffolding_application::use_cases::create_artifact::{CreateArtifact, CreateArtifactInput};
-use scaffolding_domain::value_object::ArtifactKind;
+use crate::parser::{AddArgs, AddInSubcommand, AddSubcommand};
+use scaffolding_application::use_cases::{
+	create_domain_feature::{CreateDomainFeature, CreateDomainFeatureInput},
+	create_infrastructure_tech::{CreateInfrastructureTech, CreateInfrastructureTechInput},
+	create_command_usecase::{CreateCommandUsecase, CreateCommandUsecaseInput},
+	create_query_usecase::{CreateQueryUsecase, CreateQueryUsecaseInput},
+};
 
-fn resolve_context(args: AddTargetArgs) -> Result<(String, String), CliError> {
-	match (args.bounded_context, args.in_keyword, args.bounded_context_after_in) {
-		(Some(context), None, None) => Ok((context, args.name)),
-		(None, Some(in_keyword), Some(context)) if in_keyword == "in" => Ok((context, args.name)),
-		_ => Err(CliError::OperationFailed(
-			"Use either '<name> -c <context>' or '<name> in <context>'".to_string(),
-		)),
-	}
-}
-
-pub fn handle(create_artifact: &CreateArtifact, args: AddArgs) -> Result<(), CliError> {
+pub fn handle(
+	create_domain_feature: &CreateDomainFeature,
+	create_infrastructure_tech: &CreateInfrastructureTech,
+	create_command_usecase: &CreateCommandUsecase,
+	create_query_usecase: &CreateQueryUsecase,
+	args: AddArgs,
+) -> Result<(), CliError> {
 	let project_root = resolve_project_root()?;
-	let (kind, bounded_context, artifact_name) = match args.kind {
+
+	match args.kind {
 		AddSubcommand::Query(add_args) => {
-			let (context, name) = resolve_context(add_args)?;
-			(ArtifactKind::QueryUsecase, context, name)
+			let input = CreateQueryUsecaseInput::new(project_root, add_args.bounded_context, add_args.name);
+			create_query_usecase.execute(input).map_err(|error| {
+				CliError::OperationFailed(format!("Error creating query usecase: {error}"))
+			})?;
 		}
 		AddSubcommand::Command(add_args) => {
-			let (context, name) = resolve_context(add_args)?;
-			(ArtifactKind::CommandUsecase, context, name)
+			let input = CreateCommandUsecaseInput::new(project_root, add_args.bounded_context, add_args.name);
+			create_command_usecase.execute(input).map_err(|error| {
+				CliError::OperationFailed(format!("Error creating command usecase: {error}"))
+			})?;
 		}
 		AddSubcommand::Tech(add_args) => {
-			let (context, name) = resolve_context(add_args)?;
-			(ArtifactKind::InfrastructureTech, context, name)
+			let input = CreateInfrastructureTechInput::new(project_root, add_args.bounded_context, add_args.name);
+			create_infrastructure_tech.execute(input).map_err(|error| {
+				CliError::OperationFailed(format!("Error creating infrastructure tech: {error}"))
+			})?;
 		}
 		AddSubcommand::Feature(add_args) => {
-			let (context, name) = resolve_context(add_args)?;
-			(ArtifactKind::Domain, context, name)
+			let input = CreateDomainFeatureInput::new(project_root, add_args.bounded_context, add_args.name);
+			create_domain_feature.execute(input).map_err(|error| {
+				CliError::OperationFailed(format!("Error creating domain feature: {error}"))
+			})?;
 		}
 		AddSubcommand::In(in_args) => match in_args.kind {
 			AddInSubcommand::Query(name_args) => {
-				(ArtifactKind::QueryUsecase, in_args.bounded_context, name_args.name)
+				let input = CreateQueryUsecaseInput::new(project_root, in_args.bounded_context, name_args.name);
+				create_query_usecase.execute(input).map_err(|error| {
+					CliError::OperationFailed(format!("Error creating query usecase: {error}"))
+				})?;
 			}
 			AddInSubcommand::Command(name_args) => {
-				(ArtifactKind::CommandUsecase, in_args.bounded_context, name_args.name)
+				let input = CreateCommandUsecaseInput::new(project_root, in_args.bounded_context, name_args.name);
+				create_command_usecase.execute(input).map_err(|error| {
+					CliError::OperationFailed(format!("Error creating command usecase: {error}"))
+				})?;
 			}
 			AddInSubcommand::Tech(name_args) => {
-				(ArtifactKind::InfrastructureTech, in_args.bounded_context, name_args.name)
+				let input = CreateInfrastructureTechInput::new(project_root, in_args.bounded_context, name_args.name);
+				create_infrastructure_tech.execute(input).map_err(|error| {
+					CliError::OperationFailed(format!("Error creating infrastructure tech: {error}"))
+				})?;
 			}
 			AddInSubcommand::Feature(name_args) => {
-				(ArtifactKind::Domain, in_args.bounded_context, name_args.name)
+				let input = CreateDomainFeatureInput::new(project_root, in_args.bounded_context, name_args.name);
+				create_domain_feature.execute(input).map_err(|error| {
+					CliError::OperationFailed(format!("Error creating domain feature: {error}"))
+				})?;
 			}
 		},
 	};
-
-	let input = CreateArtifactInput::new(project_root, bounded_context, kind, artifact_name);
-
-	create_artifact.execute(input).map_err(|error| {
-		CliError::OperationFailed(format!("Error creating artifact: {error}"))
-	})?;
 
 	println!("Artifact created successfully");
 	Ok(())

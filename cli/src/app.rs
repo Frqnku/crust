@@ -1,5 +1,10 @@
 use clap::Parser;
-use scaffolding_application::use_cases::create_artifact::CreateArtifact;
+use scaffolding_application::use_cases::{
+    create_domain_feature::CreateDomainFeature,
+    create_infrastructure_tech::CreateInfrastructureTech,
+    create_command_usecase::CreateCommandUsecase,
+    create_query_usecase::CreateQueryUsecase,
+};
 use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
 use workspace_application::use_cases::initialize_project::InitializeProject;
 
@@ -10,19 +15,28 @@ use crate::parser::{Cli, Commands};
 pub struct App {
 	initialize_project: InitializeProject,
 	add_bounded_context: AddBoundedContext,
-	create_artifact: CreateArtifact,
+	create_domain_feature: CreateDomainFeature,
+	create_infrastructure_tech: CreateInfrastructureTech,
+	create_command_usecase: CreateCommandUsecase,
+	create_query_usecase: CreateQueryUsecase,
 }
 
 impl App {
 	pub fn new(
 		initialize_project: InitializeProject,
 		add_bounded_context: AddBoundedContext,
-		create_artifact: CreateArtifact,
+		create_domain_feature: CreateDomainFeature,
+		create_infrastructure_tech: CreateInfrastructureTech,
+		create_command_usecase: CreateCommandUsecase,
+		create_query_usecase: CreateQueryUsecase,
 	) -> Self {
 		Self {
 			initialize_project,
 			add_bounded_context,
-			create_artifact,
+			create_domain_feature,
+			create_infrastructure_tech,
+			create_command_usecase,
+			create_query_usecase,
 		}
 	}
 
@@ -32,7 +46,13 @@ impl App {
 		match cli.command {
 			Commands::Init(args) => commands::init::handle(&self.initialize_project, args),
 			Commands::New(args) => commands::new::handle(&self.add_bounded_context, args),
-			Commands::Add(args) => commands::add::handle(&self.create_artifact, args),
+			Commands::Add(args) => commands::add::handle(
+				&self.create_domain_feature,
+				&self.create_infrastructure_tech,
+				&self.create_command_usecase,
+				&self.create_query_usecase,
+				args,
+			),
 		}
 	}
 }

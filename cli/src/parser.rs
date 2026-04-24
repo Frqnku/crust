@@ -38,15 +38,15 @@ pub struct AddArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum AddSubcommand {
-	/// Create a query use-case artifact
+	/// Create a query use-case artifact: add query <name> in <context>
 	Query(AddTargetArgs),
-	/// Create a command use-case artifact
+	/// Create a command use-case artifact: add command <name> in <context>
 	Command(AddTargetArgs),
-	/// Create infrastructure technology folder (e.g. kafka, postgre)
+	/// Create infrastructure technology folder: add tech <name> in <context>
 	Tech(AddTargetArgs),
-	/// Create domain feature folder inside the bounded context domain layer
+	/// Create domain feature folder: add feature <name> in <context>
 	Feature(AddTargetArgs),
-	/// Alternative ordering: add in <context> <kind> <name>
+	/// Add an artifact with the canonical syntax: add in <context> <kind> <name>
 	In(AddInArgs),
 }
 
@@ -55,16 +55,12 @@ pub struct AddTargetArgs {
 	/// Artifact/feature/tech name to create
 	pub name: String,
 
-	/// Target bounded context name
-	#[arg(short = 'c', long = "context")]
-	pub bounded_context: Option<String>,
-
 	/// Natural-language separator keyword
 	#[arg(value_parser = ["in"])]
-	pub in_keyword: Option<String>,
+	pub in_keyword: String,
 
-	/// Target bounded context name when using "in" syntax
-	pub bounded_context_after_in: Option<String>,
+	/// Target bounded context name
+	pub bounded_context: String,
 }
 
 #[derive(Debug, Args)]

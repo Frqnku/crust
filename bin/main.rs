@@ -1,6 +1,11 @@
 use std::rc::Rc;
 
-use scaffolding_application::use_cases::create_artifact::CreateArtifact;
+use scaffolding_application::use_cases::{
+    create_domain_feature::CreateDomainFeature,
+    create_infrastructure_tech::CreateInfrastructureTech,
+    create_command_usecase::CreateCommandUsecase,
+    create_query_usecase::CreateQueryUsecase,
+};
 use scaffolding_infrastructure::fs_artifact_scaffolder::FsArtifactScaffolder;
 use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
 use workspace_application::use_cases::initialize_project::InitializeProject;
@@ -10,7 +15,10 @@ use cli::app::App;
 struct CompositionRoot {
     initialize_project: InitializeProject,
     add_bounded_context: AddBoundedContext,
-    create_artifact: CreateArtifact,
+    create_domain_feature: CreateDomainFeature,
+    create_infrastructure_tech: CreateInfrastructureTech,
+    create_command_usecase: CreateCommandUsecase,
+    create_query_usecase: CreateQueryUsecase,
 }
 
 impl CompositionRoot {
@@ -21,7 +29,10 @@ impl CompositionRoot {
         Self {
             initialize_project: InitializeProject::new(project_scaffolder.clone()),
             add_bounded_context: AddBoundedContext::new(project_scaffolder),
-            create_artifact: CreateArtifact::new(artifact_scaffolder),
+            create_domain_feature: CreateDomainFeature::new(artifact_scaffolder.clone()),
+            create_infrastructure_tech: CreateInfrastructureTech::new(artifact_scaffolder.clone()),
+            create_command_usecase: CreateCommandUsecase::new(artifact_scaffolder.clone()),
+            create_query_usecase: CreateQueryUsecase::new(artifact_scaffolder),
         }
     }
 }
@@ -31,7 +42,10 @@ fn main() {
     let app = App::new(
         composition_root.initialize_project,
         composition_root.add_bounded_context,
-        composition_root.create_artifact,
+        composition_root.create_domain_feature,
+        composition_root.create_infrastructure_tech,
+        composition_root.create_command_usecase,
+        composition_root.create_query_usecase,
     );
 
     if let Err(error) = app.run() {
