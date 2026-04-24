@@ -4,6 +4,7 @@ use scaffolding_application::use_cases::{
 	create_domain_port::CreateDomainPort,
     create_infrastructure_tech::CreateInfrastructureTech,
     create_command_usecase::CreateCommandUsecase,
+	create_port_implementation::CreatePortImplementation,
     create_query_usecase::CreateQueryUsecase,
 };
 use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
@@ -21,6 +22,7 @@ pub struct App {
 	create_infrastructure_tech: CreateInfrastructureTech,
 	create_command_usecase: CreateCommandUsecase,
 	create_query_usecase: CreateQueryUsecase,
+	create_port_implementation: CreatePortImplementation,
 }
 
 impl App {
@@ -32,6 +34,7 @@ impl App {
 		create_infrastructure_tech: CreateInfrastructureTech,
 		create_command_usecase: CreateCommandUsecase,
 		create_query_usecase: CreateQueryUsecase,
+		create_port_implementation: CreatePortImplementation,
 	) -> Self {
 		Self {
 			initialize_project,
@@ -41,6 +44,7 @@ impl App {
 			create_infrastructure_tech,
 			create_command_usecase,
 			create_query_usecase,
+			create_port_implementation,
 		}
 	}
 
@@ -56,6 +60,10 @@ impl App {
 				&self.create_infrastructure_tech,
 				&self.create_command_usecase,
 				&self.create_query_usecase,
+				args,
+			),
+			Commands::Impl(args) => commands::implement::handle(
+				&self.create_port_implementation,
 				args,
 			),
 		}

@@ -5,6 +5,7 @@ use scaffolding_application::use_cases::{
     create_domain_port::CreateDomainPort,
     create_infrastructure_tech::CreateInfrastructureTech,
     create_command_usecase::CreateCommandUsecase,
+    create_port_implementation::CreatePortImplementation,
     create_query_usecase::CreateQueryUsecase,
 };
 use scaffolding_infrastructure::fs_artifact_scaffolder::FsArtifactScaffolder;
@@ -21,6 +22,7 @@ struct CompositionRoot {
     create_infrastructure_tech: CreateInfrastructureTech,
     create_command_usecase: CreateCommandUsecase,
     create_query_usecase: CreateQueryUsecase,
+    create_port_implementation: CreatePortImplementation,
 }
 
 impl CompositionRoot {
@@ -35,7 +37,8 @@ impl CompositionRoot {
             create_domain_port: CreateDomainPort::new(artifact_scaffolder.clone()),
             create_infrastructure_tech: CreateInfrastructureTech::new(artifact_scaffolder.clone()),
             create_command_usecase: CreateCommandUsecase::new(artifact_scaffolder.clone()),
-            create_query_usecase: CreateQueryUsecase::new(artifact_scaffolder),
+            create_query_usecase: CreateQueryUsecase::new(artifact_scaffolder.clone()),
+            create_port_implementation: CreatePortImplementation::new(artifact_scaffolder.clone()),
         }
     }
 }
@@ -50,6 +53,7 @@ fn main() {
         composition_root.create_infrastructure_tech,
         composition_root.create_command_usecase,
         composition_root.create_query_usecase,
+        composition_root.create_port_implementation,
     );
 
     if let Err(error) = app.run() {

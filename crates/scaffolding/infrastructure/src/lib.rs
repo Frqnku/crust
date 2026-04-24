@@ -5,3 +5,4 @@ pub mod scaffold_usecase;
 pub mod scaffold_infrastructure_tech;
 pub mod scaffold_domain;
 pub mod scaffold_domain_port;
+pub mod scaffold_port_implementation;

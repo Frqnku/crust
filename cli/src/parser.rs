@@ -16,6 +16,8 @@ pub enum Commands {
 	New(NewArgs),
 	/// Add an artifact to a bounded context
 	Add(AddArgs),
+	/// Create an infrastructure implementation for an existing domain port
+	Impl(ImplArgs),
 }
 
 #[derive(Debug, Args)]
@@ -117,4 +119,27 @@ pub struct AddPortNameArgs {
 
 	/// Domain port file name
 	pub port_name: String,
+}
+
+#[derive(Debug, Args)]
+pub struct ImplArgs {
+	/// Domain feature folder name
+	pub feature_name: String,
+
+	/// Domain port file name
+	pub port_name: String,
+
+	/// Natural-language separator keyword
+	#[arg(value_parser = ["for"])]
+	pub for_keyword: String,
+
+	/// Infrastructure tech folder name (e.g. postgre)
+	pub tech_name: String,
+
+	/// Natural-language separator keyword
+	#[arg(value_parser = ["in"])]
+	pub in_keyword: String,
+
+	/// Target bounded context name
+	pub bounded_context: String,
 }

@@ -1,6 +1,11 @@
 use std::path::Path;
 
-use crate::{artifact_entity::Artifact, domain_port_entity::DomainPort, errors::ScaffoldingError};
+use crate::{
+	artifact_entity::Artifact,
+	domain_port_entity::DomainPort,
+	errors::ScaffoldingError,
+	port_implementation_entity::PortImplementation,
+};
 
 /// Trait for scaffolding domain features
 pub trait DomainFeatureScaffolder {
@@ -25,4 +30,9 @@ pub trait QueryUsecaseScaffolder {
 /// Trait for scaffolding domain ports in a domain feature folder
 pub trait DomainPortScaffolder {
 	fn scaffold(&self, project_root: &Path, domain_port: DomainPort) -> Result<(), ScaffoldingError>;
+}
+
+/// Trait for scaffolding concrete infrastructure implementations for domain ports
+pub trait PortImplementationScaffolder {
+	fn scaffold(&self, project_root: &Path, implementation: PortImplementation) -> Result<(), ScaffoldingError>;
 }
