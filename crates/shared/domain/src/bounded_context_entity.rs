@@ -1,4 +1,5 @@
 use crate::errors::SharedError;
+use crate::helper::validate_crust_identifier;
 use std::fmt;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -6,27 +7,10 @@ pub struct BoundedContextName(String);
 
 impl BoundedContextName {
     pub fn new(value: String) -> Result<Self, SharedError> {
-        if value.is_empty() {
+        if let Err(reason) = validate_crust_identifier(&value) {
             return Err(SharedError::InvalidBoundedContextName {
                 value,
-                reason: "name cannot be empty".to_string(),
-            });
-        }
-
-        if value.chars().any(|character| character == '/' || character == '\\') {
-            return Err(SharedError::InvalidBoundedContextName {
-                value,
-                reason: "name cannot contain path separators".to_string(),
-            });
-        }
-
-        if !value
-            .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '_' || character == '-')
-        {
-            return Err(SharedError::InvalidBoundedContextName {
-                value,
-                reason: "name must use lowercase ASCII letters, digits, underscore, or hyphen".to_string(),
+                reason: reason.to_string(),
             });
         }
 

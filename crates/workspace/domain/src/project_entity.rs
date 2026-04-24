@@ -2,6 +2,7 @@ use std::fmt;
 use std::path::PathBuf;
 
 use crate::errors::WorkspaceError;
+use shared_domain::helper::validate_crust_identifier;
 use shared_domain::bounded_context_entity::BoundedContext;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -9,27 +10,10 @@ pub struct ProjectName(String);
 
 impl ProjectName {
     pub fn new(value: String) -> Result<Self, WorkspaceError> {
-        if value.is_empty() {
+        if let Err(reason) = validate_crust_identifier(&value) {
             return Err(WorkspaceError::InvalidProjectName {
                 value,
-                reason: "name cannot be empty".to_string(),
-            });
-        }
-
-        if value.chars().any(|character| character == '/' || character == '\\') {
-            return Err(WorkspaceError::InvalidProjectName {
-                value,
-                reason: "name cannot contain path separators".to_string(),
-            });
-        }
-
-        if !value
-            .chars()
-            .all(|character| character.is_ascii_lowercase() || character.is_ascii_digit() || character == '_' || character == '-')
-        {
-            return Err(WorkspaceError::InvalidProjectName {
-                value,
-                reason: "name must use lowercase ASCII letters, digits, underscore, or hyphen".to_string(),
+                reason: reason.to_string(),
             });
         }
 
