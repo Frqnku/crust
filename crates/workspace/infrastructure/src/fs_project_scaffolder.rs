@@ -5,11 +5,11 @@ use crate::{
     scaffold_project::scaffold_project,
 };
 
+use shared_domain::bounded_context_entity::BoundedContext;
 use workspace_domain::{
-    entities::{
+    project_entity::{
         Project,
-        ProjectScaffolder,
-        BoundedContext
+        ProjectScaffolder
     },
     errors::WorkspaceError,
 };

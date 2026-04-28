@@ -1,6 +1,7 @@
 use std::fs;
 use std::path::Path;
 
+use shared_domain::bounded_context_entity::BoundedContext;
 use toml_edit::{Array, DocumentMut, Item, Value};
 
 use shared_infrastructure::fs_helper::{
@@ -17,7 +18,7 @@ use shared_infrastructure::fs_helper::{
 use crate::templates::crates::WORKSPACE_TEMPLATES;
 
 use workspace_domain::{
-    entities::{BoundedContext, Project},
+    project_entity::Project,
     errors::WorkspaceError,
 };
 

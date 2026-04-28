@@ -1,8 +1,8 @@
 use std::{path::PathBuf, rc::Rc};
 
+use shared_domain::bounded_context_entity::BoundedContext;
 use workspace_domain::{
-	entities::{
-		BoundedContext,
+	project_entity::{
 		ProjectScaffolder,
 		Project,
 	},

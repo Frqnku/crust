@@ -15,7 +15,7 @@ use crate::templates::{
 };
 
 use workspace_domain::{
-    entities::Project,
+    project_entity::Project,
     errors::WorkspaceError,
 };
 

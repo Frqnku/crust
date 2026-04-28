@@ -1,7 +1,7 @@
 use std::{path::PathBuf, rc::Rc};
 
 use workspace_domain::{
-    entities::{
+    project_entity::{
         Project,
         ProjectScaffolder
     },

@@ -5,3 +5,4 @@ edition = "2024"
 
 [dependencies]
 workspace_domain = { path = "../domain" }
+shared_domain = { path = "../../shared/domain" }
