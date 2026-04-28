@@ -48,10 +48,13 @@ pub enum AddSubcommand {
 	Tech(AddTargetArgs),
 	/// Create domain feature folder: add feature <name> in <context>
 	Feature(AddTargetArgs),
-	/// Create domain port file: add port <feature> <port_name> in <context>
+	/// Create domain port file: add port <feature> <port_name> in <context> [with <tech>]
 	Port(AddPortTargetArgs),
 	/// Add an artifact with the canonical syntax: add in <context> <kind> <name>
 	In(AddInArgs),
+	/// Shortcut syntax for domain ports: add <feature> <port_name> in <context> [with <tech>]
+	#[command(external_subcommand)]
+	PortShortcut(Vec<String>),
 }
 
 #[derive(Debug, Args)]
@@ -81,6 +84,13 @@ pub struct AddPortTargetArgs {
 
 	/// Target bounded context name
 	pub bounded_context: String,
+
+	/// Optional keyword to trigger implementation scaffolding
+	#[arg(value_parser = ["with"])]
+	pub with_keyword: Option<String>,
+
+	/// Optional infrastructure tech (e.g. postgres)
+	pub tech_name: Option<String>,
 }
 
 #[derive(Debug, Args)]
@@ -119,6 +129,13 @@ pub struct AddPortNameArgs {
 
 	/// Domain port file name
 	pub port_name: String,
+
+	/// Optional keyword to trigger implementation scaffolding
+	#[arg(value_parser = ["with"])]
+	pub with_keyword: Option<String>,
+
+	/// Optional infrastructure tech (e.g. postgres)
+	pub tech_name: Option<String>,
 }
 
 #[derive(Debug, Args)]
