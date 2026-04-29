@@ -50,11 +50,6 @@ pub enum AddSubcommand {
 	Feature(AddTargetArgs),
 	/// Create domain port file: add port <feature> <port_name> in <context> [with <tech>]
 	Port(AddPortTargetArgs),
-	/// Add an artifact with the canonical syntax: add in <context> <kind> <name>
-	In(AddInArgs),
-	/// Shortcut syntax for domain ports: add <feature> <port_name> in <context> [with <tech>]
-	#[command(external_subcommand)]
-	PortShortcut(Vec<String>),
 }
 
 #[derive(Debug, Args)]
@@ -93,50 +88,6 @@ pub struct AddPortTargetArgs {
 	pub tech_name: Option<String>,
 }
 
-#[derive(Debug, Args)]
-pub struct AddInArgs {
-	/// Target bounded context name
-	pub bounded_context: String,
-
-	#[command(subcommand)]
-	pub kind: AddInSubcommand,
-}
-
-#[derive(Debug, Subcommand)]
-pub enum AddInSubcommand {
-	/// Create a query use-case artifact
-	Query(AddNameArgs),
-	/// Create a command use-case artifact
-	Command(AddNameArgs),
-	/// Create infrastructure technology folder (e.g. kafka, postgre)
-	Tech(AddNameArgs),
-	/// Create domain feature folder inside the bounded context domain layer
-	Feature(AddNameArgs),
-	/// Create domain port file inside a domain feature folder
-	Port(AddPortNameArgs),
-}
-
-#[derive(Debug, Args)]
-pub struct AddNameArgs {
-	/// Artifact/feature/tech name to create
-	pub name: String,
-}
-
-#[derive(Debug, Args)]
-pub struct AddPortNameArgs {
-	/// Domain feature folder name
-	pub feature_name: String,
-
-	/// Domain port file name
-	pub port_name: String,
-
-	/// Optional keyword to trigger implementation scaffolding
-	#[arg(value_parser = ["with"])]
-	pub with_keyword: Option<String>,
-
-	/// Optional infrastructure tech (e.g. postgres)
-	pub tech_name: Option<String>,
-}
 
 #[derive(Debug, Args)]
 pub struct ImplArgs {
