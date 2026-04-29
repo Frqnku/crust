@@ -13,6 +13,7 @@ use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
 use workspace_application::use_cases::initialize_project::InitializeProject;
 use workspace_infrastructure::fs_project_scaffolder::FsProjectScaffolder;
 use cli::app::App;
+use cli::output::Presenter;
 
 struct CompositionRoot {
     initialize_project: InitializeProject,
@@ -57,7 +58,8 @@ fn main() {
     );
 
     if let Err(error) = app.run() {
-        eprintln!("{error}");
+        let error_message = error.to_message();
+        Presenter::error(&error_message);
         std::process::exit(1);
     }
 }

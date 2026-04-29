@@ -1,6 +1,7 @@
 use crate::error::CliError;
 use crate::helper::{project_name_from_root, resolve_project_root};
 use crate::parser::NewArgs;
+use crate::output::{Presenter, Success};
 use workspace_application::use_cases::add_bounded_context::{AddBoundedContext, AddBoundedContextInput};
 
 pub fn handle(add_bounded_context: &AddBoundedContext, args: NewArgs) -> Result<(), CliError> {
@@ -16,10 +17,10 @@ pub fn handle(add_bounded_context: &AddBoundedContext, args: NewArgs) -> Result<
 		CliError::OperationFailed(format!("Error creating bounded context: {error}"))
 	})?;
 
-	println!(
-		"Bounded context '{}' created at '{}'",
-		args.bounded_context,
-		project_root.join("crates").join(&args.bounded_context).display()
-	);
+	let success = Success::new("Bounded context created successfully")
+		.with_detail(format!("Context: {}", args.bounded_context))
+		.with_detail(format!("Location: {}", project_root.join("crates").join(&args.bounded_context).display()));
+	
+	Presenter::success(&success);
 	Ok(())
 }

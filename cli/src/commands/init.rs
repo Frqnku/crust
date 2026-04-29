@@ -1,6 +1,7 @@
 use crate::error::CliError;
 use crate::helper::current_dir;
 use crate::parser::InitArgs;
+use crate::output::{Presenter, Success};
 use workspace_application::use_cases::initialize_project::{InitializeProject, InitializeProjectInput};
 
 pub fn handle(initialize_project: &InitializeProject, args: InitArgs) -> Result<(), CliError> {
@@ -20,15 +21,15 @@ pub fn handle(initialize_project: &InitializeProject, args: InitArgs) -> Result<
 		}
 	};
 
-	let input = InitializeProjectInput::new(name, path);
+	let input = InitializeProjectInput::new(name.clone(), path.clone());
 	let project = initialize_project.execute(input).map_err(|error| {
 		CliError::OperationFailed(format!("Error initializing project: {error}"))
 	})?;
 
-	println!(
-		"Project '{}' initialized at '{}'",
-		project.name(),
-		project.path().display()
-	);
+	let success = Success::new("Project initialized successfully")
+		.with_detail(format!("Name: {}", project.name()))
+		.with_detail(format!("Location: {}", project.path().display()));
+	
+	Presenter::success(&success);
 	Ok(())
 }
