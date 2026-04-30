@@ -40,14 +40,14 @@ pub struct AddArgs {
 
 #[derive(Debug, Subcommand)]
 pub enum AddSubcommand {
-	/// Create a query use-case artifact: add query <name> in <context>
-	Query(AddTargetArgs),
-	/// Create a command use-case artifact: add command <name> in <context>
-	Command(AddTargetArgs),
-	/// Create infrastructure technology folder: add tech <name> in <context>
-	Tech(AddTargetArgs),
-	/// Create domain feature folder: add feature <name> in <context>
-	Feature(AddTargetArgs),
+	/// Create query use-case artifact(s): add query <name> [<name2> ...] in <context>
+	Query(AddMultipleTargetArgs),
+	/// Create command use-case artifact(s): add command <name> [<name2> ...] in <context>
+	Command(AddMultipleTargetArgs),
+	/// Create infrastructure technology folder(s): add tech <name> [<name2> ...] in <context>
+	Tech(AddMultipleTargetArgs),
+	/// Create domain feature folder(s): add feature <name> [<name2> ...] in <context>
+	Feature(AddMultipleTargetArgs),
 	/// Create domain port file: add port <feature> <port_name> in <context> [with <tech>]
 	Port(AddPortTargetArgs),
 }
@@ -63,6 +63,12 @@ pub struct AddTargetArgs {
 
 	/// Target bounded context name
 	pub bounded_context: String,
+}
+
+#[derive(Debug, Args)]
+pub struct AddMultipleTargetArgs {
+	/// Names and context: <name> [<name2> ...] in <context>
+	pub args: Vec<String>,
 }
 
 #[derive(Debug, Args)]

@@ -17,6 +17,27 @@ impl Presenter {
 		}
 	}
 
+	/// Print a batch result with mixed coloring for partial successes.
+	pub fn batch_result(title: impl AsRef<str>, bounded_context: impl AsRef<str>, succeeded: &[String], failed: &[(String, String)]) {
+		if succeeded.is_empty() {
+			eprintln!("{} {}", "✗".red().bold(), title.as_ref().red().bold());
+
+			for (name, error) in failed {
+				eprintln!("  • {}", format!("{}: {}", name, error).red());
+			}
+
+			return;
+		}
+
+		eprintln!("{} {}", "⚠".yellow(), title.as_ref().yellow());
+		eprintln!("  • {}", format!("Context: {}", bounded_context.as_ref()).bright_white());
+		eprintln!("  • {}", format!("✓ Created: {}", succeeded.join(", ")).green());
+
+		for (name, error) in failed {
+			eprintln!("  • {}", format!("✗ {}: {}", name, error).red());
+		}
+	}
+
 	/// Print an error message with structured formatting
 	pub fn error(error: &ErrorMessage) {
 		let cross = "✗".red().bold();

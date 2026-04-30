@@ -39,8 +39,9 @@ pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Res
 
 	let domain_port_path = domain_port_directory.join(domain_port.as_file_name());
 	if domain_port_path.exists() {
-		return Err(ScaffoldingError::ArtifactAlreadyExists {
+		return Err(ScaffoldingError::ArtifactAlreadyExistsInFeature {
 			name: domain_port.port_name().as_str().to_string(),
+			feature: domain_port.feature_name().as_str().to_string(),
 			bounded_context: domain_port.bounded_context().name().as_str().to_string(),
 			kind: "Domain port".to_string(),
 		});

@@ -46,12 +46,10 @@ pub fn validate_port_implementation_preconditions(
 
 	let implementation_directory = implementation.implementation_directory(project_root);
 	if !implementation_directory.is_dir() {
-		return Err(ScaffoldingError::BoundedContextNotFound {
-			name: format!(
-				"{}/infrastructure/{}",
-				implementation.bounded_context().name().as_str(),
-				implementation.tech_name().as_str()
-			),
+		return Err(ScaffoldingError::ArtifactNotFound {
+			name: implementation.tech_name().as_str().to_string(),
+			bounded_context: implementation.bounded_context().name().as_str().to_string(),
+			kind: "Tech".to_string(),
 		});
 	}
 
