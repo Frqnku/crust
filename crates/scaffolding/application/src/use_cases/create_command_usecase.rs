@@ -43,3 +43,50 @@ impl CreateCommandUsecase {
 		self.scaffolder.scaffold(&input.project_root, artifact)
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::{cell::RefCell, path::Path, rc::Rc};
+
+	struct MockScaffolder {
+		called: RefCell<bool>,
+	}
+
+	impl MockScaffolder {
+		fn new() -> Self {
+			Self { called: RefCell::new(false) }
+		}
+	}
+
+	impl CommandUsecaseScaffolder for MockScaffolder {
+		fn scaffold(
+			&self,
+			_project_root: &Path,
+			_artifact: scaffolding_domain::artifact_entity::Artifact,
+		) -> Result<(), scaffolding_domain::errors::ScaffoldingError> {
+			*self.called.borrow_mut() = true;
+			Ok(())
+		}
+	}
+
+	#[test]
+	fn execute_calls_scaffolder() {
+		let mock = Rc::new(MockScaffolder::new());
+		let usecase = CreateCommandUsecase::new(mock.clone());
+		let input = CreateCommandUsecaseInput::new(PathBuf::from("."), "test".into(), "create_user".into());
+		let res = usecase.execute(input);
+		assert!(res.is_ok());
+		assert!(*mock.called.borrow());
+	}
+
+	#[test]
+	fn invalid_bounded_context_returns_error_without_calling_scaffolder() {
+		let mock = Rc::new(MockScaffolder::new());
+		let usecase = CreateCommandUsecase::new(mock.clone());
+		let input = CreateCommandUsecaseInput::new(PathBuf::from("."), "Bad Context".into(), "create_user".into());
+		let res = usecase.execute(input);
+		assert!(matches!(res, Err(ScaffoldingError::InvalidBoundedContextName { .. })));
+		assert!(!*mock.called.borrow());
+	}
+}

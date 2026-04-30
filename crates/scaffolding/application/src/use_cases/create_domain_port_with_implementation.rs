@@ -96,3 +96,75 @@ impl CreateDomainPortWithImplementation {
 		Ok(())
 	}
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use std::{cell::RefCell, path::Path, rc::Rc};
+
+	struct MockDomain {
+		called: RefCell<bool>,
+	}
+
+	impl MockDomain {
+		fn new() -> Self {
+			Self { called: RefCell::new(false) }
+		}
+	}
+
+	impl DomainPortScaffolder for MockDomain {
+		fn scaffold(
+			&self,
+			_project_root: &Path,
+			_domain_port: scaffolding_domain::domain_port_entity::DomainPort,
+		) -> Result<(), scaffolding_domain::errors::ScaffoldingError> {
+			*self.called.borrow_mut() = true;
+			Ok(())
+		}
+	}
+
+	struct MockImpl {
+		called: RefCell<bool>,
+	}
+
+	impl MockImpl {
+		fn new() -> Self {
+			Self { called: RefCell::new(false) }
+		}
+	}
+
+	impl PortImplementationScaffolder for MockImpl {
+		fn scaffold(
+			&self,
+			_project_root: &Path,
+			_implementation: scaffolding_domain::port_implementation_entity::PortImplementation,
+		) -> Result<(), scaffolding_domain::errors::ScaffoldingError> {
+			*self.called.borrow_mut() = true;
+			Ok(())
+		}
+	}
+
+	#[test]
+	fn execute_creates_port_only_when_no_tech_is_provided() {
+		let domain = Rc::new(MockDomain::new());
+		let implementation = Rc::new(MockImpl::new());
+		let usecase = CreateDomainPortWithImplementation::new(domain.clone(), implementation.clone());
+		let input = CreateDomainPortWithImplementationInput::new(PathBuf::from("."), "test".into(), "auth".into(), "repo".into(), None);
+		let res = usecase.execute(input);
+		assert!(res.is_ok());
+		assert!(*domain.called.borrow());
+		assert!(!*implementation.called.borrow());
+	}
+
+	#[test]
+	fn missing_tech_directory_returns_error_without_calling_scaffolders() {
+		let domain = Rc::new(MockDomain::new());
+		let implementation = Rc::new(MockImpl::new());
+		let usecase = CreateDomainPortWithImplementation::new(domain.clone(), implementation.clone());
+		let input = CreateDomainPortWithImplementationInput::new(PathBuf::from("."), "test".into(), "auth".into(), "repo".into(), Some("postgres".into()));
+		let res = usecase.execute(input);
+		assert!(matches!(res, Err(ScaffoldingError::BoundedContextNotFound { .. })));
+		assert!(!*domain.called.borrow());
+		assert!(!*implementation.called.borrow());
+	}
+}

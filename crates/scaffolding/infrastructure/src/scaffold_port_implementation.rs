@@ -103,3 +103,61 @@ pub fn scaffold_port_implementation(
 
 	Ok(())
 }
+
+#[cfg(test)]
+mod tests {
+	use super::*;
+	use tempfile::TempDir;
+	use std::fs;
+
+	#[test]
+	fn scaffold_creates_implementation_and_mod_update() {
+		let tmp = TempDir::new().unwrap();
+		let project_root = tmp.path();
+		let bc = "test".to_string();
+		// create port file path precondition
+		let port_dir = project_root.join("crates").join(&bc).join("domain").join("src").join("auth");
+		fs::create_dir_all(&port_dir).unwrap();
+		fs::write(port_dir.join("repo.rs"), "// port").unwrap();
+
+		// create implementation directory and module file that the transaction updates
+		let impl_dir = project_root.join("crates").join(&bc).join("infrastructure").join("src").join("postgres");
+		fs::create_dir_all(&impl_dir).unwrap();
+		fs::write(impl_dir.join("mod.rs"), "").unwrap();
+
+		let implementation = scaffolding_domain::port_implementation_entity::PortImplementation::new(
+			shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
+			"auth".to_string(),
+			"repo".to_string(),
+			"postgres".to_string(),
+		).unwrap();
+
+		let res = scaffold_port_implementation(project_root, implementation);
+		assert!(res.is_ok());
+
+		let file = project_root.join("crates").join(&bc).join("infrastructure").join("src").join("postgres").join("auth_repo.rs");
+		assert!(file.is_file());
+		let mod_file = project_root.join("crates").join(&bc).join("infrastructure").join("src").join("postgres").join("mod.rs");
+		let content = fs::read_to_string(mod_file).unwrap();
+		assert!(content.contains("pub mod auth_repo;"));
+	}
+
+	#[test]
+	fn missing_port_file_returns_error() {
+		let tmp = TempDir::new().unwrap();
+		let project_root = tmp.path();
+		let bc = "test".to_string();
+		let impl_dir = project_root.join("crates").join(&bc).join("infrastructure").join("src").join("postgres");
+		fs::create_dir_all(&impl_dir).unwrap();
+
+		let implementation = scaffolding_domain::port_implementation_entity::PortImplementation::new(
+			shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
+			"auth".to_string(),
+			"repo".to_string(),
+			"postgres".to_string(),
+		).unwrap();
+
+		let res = scaffold_port_implementation(project_root, implementation);
+		assert!(matches!(res, Err(ScaffoldingError::BoundedContextNotFound { .. })));
+	}
+}

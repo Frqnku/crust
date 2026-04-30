@@ -6,3 +6,6 @@ edition = "2024"
 [dependencies]
 scaffolding_domain = { path = "../domain" }
 shared_domain = { path = "../../shared/domain" }
+
+[dev-dependencies]
+tempfile = "3.8"
