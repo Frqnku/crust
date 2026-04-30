@@ -4,4 +4,3 @@ pub mod create_infrastructure_tech;
 pub mod create_command_usecase;
 pub mod create_query_usecase;
 pub mod create_port_implementation;
-pub mod create_domain_port_with_implementation;
