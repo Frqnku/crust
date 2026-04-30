@@ -1,19 +1,12 @@
-pub const USECASE_CONTENT: &str = r#"pub struct {usecase_name} {
-    // example:
-    // dependency: Box<dyn TraitExample>,
-}
+pub const USECASE_CONTENT: &str = r#"pub struct {usecase_name};
 
 impl {usecase_name} {
-    pub fn new(
-        // dependency: Box<dyn TraitExample>,
-    ) -> Self {
-        Self {
-            // dependency,
-        }
+    pub fn new() -> Self {
+        Self
     }
 
     pub fn execute(&self) -> Result<(), String> {
-        todo!()
+        Ok(())
     }
 }
 "#;
