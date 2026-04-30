@@ -57,18 +57,40 @@ impl CreateDomainPortWithImplementation {
 			input.feature_name.clone(),
 			input.port_name.clone(),
 		)?;
+
+		// If an implementation is requested, build the implementation object and validate BEFORE creating the port
+		let implementation = if let Some(ref tech_name) = input.tech_name {
+			let impl_obj = PortImplementation::new(
+				bounded_context.clone(),
+				input.feature_name.clone(),
+				input.port_name.clone(),
+				tech_name.clone(),
+			)?;
+			// Check that the tech infrastructure directory exists before proceeding
+			// This prevents creating an orphaned port if the tech doesn't exist
+			let impl_directory = impl_obj.implementation_directory(&input.project_root);
+			if !impl_directory.is_dir() {
+				return Err(ScaffoldingError::BoundedContextNotFound {
+					name: format!(
+						"{}/infrastructure/{}",
+						impl_obj.bounded_context().name().as_str(),
+						impl_obj.tech_name().as_str()
+					),
+				});
+			}
+			Some(impl_obj)
+		} else {
+			None
+		};
+
+		// Now safe to create the domain port (all validations passed)
 		self.domain_port_scaffolder
 			.scaffold(&input.project_root, domain_port)?;
 
-		if let Some(tech_name) = input.tech_name {
-			let implementation = PortImplementation::new(
-				bounded_context,
-				input.feature_name,
-				input.port_name,
-				tech_name,
-			)?;
+		// Then create implementation if requested
+		if let Some(impl_obj) = implementation {
 			self.port_implementation_scaffolder
-				.scaffold(&input.project_root, implementation)?;
+				.scaffold(&input.project_root, impl_obj)?;
 		}
 
 		Ok(())

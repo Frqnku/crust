@@ -1,21 +1,12 @@
-use std::path::Path;
+use std::{fs, path::Path};
 
 use scaffolding_domain::{
 	artifact_entity::Artifact,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::fs_helper::{create_dir, create_file};
+use shared_infrastructure::{fs_helper::io_conflict, FileSystemTransaction};
 
-use crate::fs_scaffold_helper::{map_artifact_fs_error, rollback_created_directory, upsert_mod_declaration};
-
-fn rollback_infrastructure_tech(tech_directory_path: &Path, infrastructure_tech: &Artifact) -> Result<(), ScaffoldingError> {
-	rollback_created_directory(tech_directory_path)
-		.map_err(|error| ScaffoldingError::ArtifactRollbackFailed {
-			name: infrastructure_tech.name().as_str().to_string(),
-			bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-			reason: format!("failed to remove '{}': {error}", tech_directory_path.display()),
-		})
-}
+use crate::fs_scaffold_helper::map_artifact_fs_error;
 
 pub fn scaffold_infrastructure_tech(
 	project_root: &Path,
@@ -40,23 +31,33 @@ pub fn scaffold_infrastructure_tech(
 		return Err(ScaffoldingError::ArtifactAlreadyExists {
 			name: infrastructure_tech.name().as_str().to_string(),
 			bounded_context: infrastructure_tech.bounded_context().name().as_str().to_string(),
-            kind: infrastructure_tech.kind().display().to_string(),
+			kind: infrastructure_tech.kind().display().to_string(),
 		});
 	}
 
-	create_dir(&tech_directory_path).map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
-
 	let mod_file_path = tech_directory_path.join("mod.rs");
-	create_file(&mod_file_path, "")
-		.map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
-
 	let infrastructure_lib_path = infrastructure_src_directory.join("lib.rs");
-	if let Err(error) = upsert_mod_declaration(&infrastructure_lib_path, infrastructure_tech.name().as_str(), "pub mod")
-		.map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))
-	{
-		rollback_infrastructure_tech(&tech_directory_path, &infrastructure_tech)?;
-		return Err(error);
+	let mut lib_content = if infrastructure_lib_path.exists() {
+		fs::read_to_string(&infrastructure_lib_path)
+			.map_err(|error| map_artifact_fs_error(io_conflict(&infrastructure_lib_path, "read module file", error), &infrastructure_tech))?
+	} else {
+		String::new()
+	};
+	let module_declaration = format!("pub mod {};", infrastructure_tech.name().as_str());
+	if !lib_content.lines().any(|line| line.trim() == module_declaration) {
+		if !lib_content.is_empty() && !lib_content.ends_with('\n') {
+			lib_content.push('\n');
+		}
+		lib_content.push_str(&module_declaration);
+		lib_content.push('\n');
 	}
+
+	let mut tx = FileSystemTransaction::new();
+	tx.create_dir(&tech_directory_path);
+	tx.create_file(&mod_file_path, "");
+	tx.modify_file(&infrastructure_lib_path, lib_content)
+		.map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
+	tx.commit().map_err(|error| map_artifact_fs_error(error, &infrastructure_tech))?;
 
 	Ok(())
 }

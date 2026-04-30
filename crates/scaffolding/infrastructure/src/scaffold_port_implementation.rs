@@ -1,18 +1,14 @@
-use std::path::Path;
+use std::{fs, path::Path};
 
 use scaffolding_domain::{
 	errors::ScaffoldingError,
 	port_implementation_entity::PortImplementation,
 };
-use shared_infrastructure::fs_helper::{create_file, map_fs_error, FsHelperError};
+use shared_infrastructure::{fs_helper::{io_conflict, map_fs_error, FsHelperError}, FileSystemTransaction};
 
-use crate::fs_scaffold_helper::{rollback_created_file, upsert_mod_declaration};
 use crate::templates::port_implementation::PORT_IMPLEMENTATION_CONTENT;
 
-fn map_port_implementation_fs_error(
-	error: FsHelperError,
-	implementation: &PortImplementation,
-) -> ScaffoldingError {
+fn map_port_implementation_fs_error(error: FsHelperError, implementation: &PortImplementation) -> ScaffoldingError {
 	map_fs_error(
 		error,
 		|path, reason| ScaffoldingError::ArtifactIoConflict {
@@ -30,20 +26,11 @@ fn map_port_implementation_fs_error(
 	)
 }
 
-fn rollback_implementation_file(
-	implementation_path: &Path,
-	implementation: &PortImplementation,
-) -> Result<(), ScaffoldingError> {
-	rollback_created_file(implementation_path).map_err(|error| ScaffoldingError::ArtifactRollbackFailed {
-		name: implementation.implementation_module_name(),
-		bounded_context: implementation.bounded_context().name().as_str().to_string(),
-		reason: format!("failed to remove '{}': {error}", implementation_path.display()),
-	})
-}
-
-pub fn scaffold_port_implementation(
+/// Validate that all preconditions are met for creating a port implementation
+/// This is a side-effect-free check to prevent orphaned artifacts
+pub fn validate_port_implementation_preconditions(
 	project_root: &Path,
-	implementation: PortImplementation,
+	implementation: &PortImplementation,
 ) -> Result<(), ScaffoldingError> {
 	let port_file_path = implementation.port_file_path(project_root);
 	if !port_file_path.is_file() {
@@ -77,26 +64,44 @@ pub fn scaffold_port_implementation(
 		});
 	}
 
+	Ok(())
+}
+
+pub fn scaffold_port_implementation(
+	project_root: &Path,
+	implementation: PortImplementation,
+) -> Result<(), ScaffoldingError> {
+	validate_port_implementation_preconditions(project_root, &implementation)?;
+
+	let implementation_directory = implementation.implementation_directory(project_root);
+	let implementation_path = implementation.implementation_file_path(project_root);
+	let mod_file_path = implementation_directory.join("mod.rs");
+	let mut mod_content = if mod_file_path.exists() {
+		fs::read_to_string(&mod_file_path)
+			.map_err(|error| map_port_implementation_fs_error(io_conflict(&mod_file_path, "read module file", error), &implementation))?
+	} else {
+		String::new()
+	};
+	let module_declaration = format!("pub mod {};", implementation.implementation_module_name());
+	if !mod_content.lines().any(|line| line.trim() == module_declaration) {
+		if !mod_content.is_empty() && !mod_content.ends_with('\n') {
+			mod_content.push('\n');
+		}
+		mod_content.push_str(&module_declaration);
+		mod_content.push('\n');
+	}
+
 	let implementation_content = PORT_IMPLEMENTATION_CONTENT
         .replace("{bounded_context_name}", implementation.bounded_context().name().as_str())
 		.replace("{feature_name}", implementation.feature_name().as_str())
 		.replace("{port_name}", implementation.port_name().as_str())
 		.replace("{trait_name}", &implementation.trait_name())
 		.replace("{struct_name}", &implementation.struct_name());
-	create_file(&implementation_path, &implementation_content)
+	let mut tx = FileSystemTransaction::new();
+	tx.create_file(&implementation_path, &implementation_content);
+	tx.modify_file(&mod_file_path, mod_content)
 		.map_err(|error| map_port_implementation_fs_error(error, &implementation))?;
-
-	let mod_file_path = implementation_directory.join("mod.rs");
-	if let Err(error) = upsert_mod_declaration(
-		&mod_file_path,
-		&implementation.implementation_module_name(),
-		"pub mod",
-	)
-	.map_err(|error| map_port_implementation_fs_error(error, &implementation))
-	{
-		rollback_implementation_file(&implementation_path, &implementation)?;
-		return Err(error);
-	}
+	tx.commit().map_err(|error| map_port_implementation_fs_error(error, &implementation))?;
 
 	Ok(())
 }

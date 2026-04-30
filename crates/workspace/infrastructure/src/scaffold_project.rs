@@ -1,13 +1,14 @@
 use std::path::{Path, PathBuf};
 
-use shared_infrastructure::fs_helper::{
-    create_dir,
-    create_file,
-    create_unique_temp_dir,
-    finalize_scaffold,
-    map_fs_error,
-    io_conflict,
-    remove_dir,
+use shared_infrastructure::{
+    fs_helper::{
+        create_unique_temp_dir,
+        finalize_scaffold,
+        map_fs_error,
+        io_conflict,
+        remove_dir,
+    },
+    FileSystemTransaction,
 };
 use crate::templates::{
     bin::{BIN_CARGO_TOML, MAIN_RS_CONTENT},
@@ -50,23 +51,33 @@ fn check_valid_project_directory(path: &Path) -> Result<(), WorkspaceError> {
     Ok(())
 }
 
-fn create_project_setup(project: &Project, scaffold_root: &Path) -> Result<(), WorkspaceError> {
-    create_dir(scaffold_root).map_err(workspace_error_from_fs)?;
+/// Build a transaction for project setup
+/// Returns a transaction that, when committed, creates the entire project structure atomically
+fn build_project_setup_transaction(
+    project: &Project,
+    scaffold_root: &Path,
+) -> Result<FileSystemTransaction, WorkspaceError> {
+    let mut tx = FileSystemTransaction::new();
 
-    let cargo_toml_path = scaffold_root.join("Cargo.toml");
-    create_file(&cargo_toml_path, PROJECT_CARGO_TOML).map_err(workspace_error_from_fs)?;
+    // Create root directory
+    tx.create_dir(scaffold_root);
 
+    // Create workspace Cargo.toml
+    tx.create_file(scaffold_root.join("Cargo.toml"), PROJECT_CARGO_TOML);
+
+    // Create bin directory and files
     let bin_path = scaffold_root.join("bin");
-    create_dir(&bin_path).map_err(workspace_error_from_fs)?;
+    tx.create_dir(&bin_path);
 
     let bin_cargo_toml = BIN_CARGO_TOML.replace("{bin_name}", project.name().as_str());
-    create_file(&bin_path.join("Cargo.toml"), &bin_cargo_toml).map_err(workspace_error_from_fs)?;
-    create_file(&bin_path.join("main.rs"), MAIN_RS_CONTENT).map_err(workspace_error_from_fs)?;
+    tx.create_file(bin_path.join("Cargo.toml"), bin_cargo_toml);
+    tx.create_file(bin_path.join("main.rs"), MAIN_RS_CONTENT);
 
+    // Create crates directory
     let crates_path = scaffold_root.join("crates");
-    create_dir(&crates_path).map_err(workspace_error_from_fs)?;
+    tx.create_dir(crates_path);
 
-    Ok(())
+    Ok(tx)
 }
 
 pub fn scaffold_project(name: String, path: PathBuf) -> Result<Project, WorkspaceError> {
@@ -76,11 +87,14 @@ pub fn scaffold_project(name: String, path: PathBuf) -> Result<Project, Workspac
     let temp_root = create_unique_temp_dir(parent, "crust-project").map_err(workspace_error_from_fs)?;
     let project = Project::new(name, path.clone())?;
 
-    if let Err(error) = create_project_setup(&project, &temp_root) {
+    // Build and commit the transaction atomically
+    let tx = build_project_setup_transaction(&project, &temp_root)?;
+    if let Err(error) = tx.commit().map_err(workspace_error_from_fs) {
         remove_dir(&temp_root);
         return Err(error);
     }
 
+    // Finalize: move from temp to actual location
     if let Err(error) = finalize_scaffold(&temp_root, &path).map_err(workspace_error_from_fs) {
         remove_dir(&temp_root);
         return Err(error);
@@ -88,3 +102,4 @@ pub fn scaffold_project(name: String, path: PathBuf) -> Result<Project, Workspac
 
     Ok(project)
 }
+

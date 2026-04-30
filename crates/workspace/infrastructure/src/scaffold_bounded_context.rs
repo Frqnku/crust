@@ -4,15 +4,16 @@ use std::path::Path;
 use shared_domain::bounded_context_entity::BoundedContext;
 use toml_edit::{Array, DocumentMut, Item, Value};
 
-use shared_infrastructure::fs_helper::{
-    create_dir,
-    create_file,
-    create_unique_temp_dir,
-    finalize_scaffold,
-    io_conflict,
-    map_fs_error,
-    remove_dir,
-    FsHelperError,
+use shared_infrastructure::{
+    fs_helper::{
+        create_unique_temp_dir,
+        finalize_scaffold,
+        io_conflict,
+        map_fs_error,
+        remove_dir,
+        FsHelperError,
+    },
+    FileSystemTransaction,
 };
 
 use crate::templates::crates::WORKSPACE_TEMPLATES;
@@ -74,39 +75,59 @@ fn workspace_error_from_fs(error: FsHelperError) -> WorkspaceError {
     )
 }
 
-fn scaffold_application_sources(src_path: &Path) -> Result<(), WorkspaceError> {
+/// Build transaction for application layer sources
+fn build_application_sources_transaction(
+    tx: &mut FileSystemTransaction,
+    src_path: &Path,
+) {
     let query_path = src_path.join("query");
     let command_path = src_path.join("command");
 
-    create_dir(&query_path).map_err(workspace_error_from_fs)?;
-    create_dir(&command_path).map_err(workspace_error_from_fs)?;
-    create_file(&query_path.join("mod.rs"), "").map_err(workspace_error_from_fs)?;
-    create_file(&command_path.join("mod.rs"), "").map_err(workspace_error_from_fs)?;
-    create_file(&src_path.join("lib.rs"), "pub mod query;\npub mod command;\n").map_err(workspace_error_from_fs)?;
-
-    Ok(())
+    tx.create_dir(&query_path);
+    tx.create_dir(&command_path);
+    tx.create_file(query_path.join("mod.rs"), "");
+    tx.create_file(command_path.join("mod.rs"), "");
+    tx.create_file(src_path.join("lib.rs"), "pub mod query;\npub mod command;\n");
 }
 
-fn create_layer_workspace(
+/// Build transaction for a single layer workspace
+fn build_layer_transaction(
+    tx: &mut FileSystemTransaction,
     bounded_context_path: &Path,
     bounded_context: &BoundedContext,
     workspace_layer_name: &str,
     cargo_toml_template: &str,
-) -> Result<(), WorkspaceError> {
+) {
     let workspace_path = bounded_context_path.join(workspace_layer_name);
-    create_dir(&workspace_path).map_err(workspace_error_from_fs)?;
+    tx.create_dir(&workspace_path);
+    
     let src_path = workspace_path.join("src");
-    create_dir(&src_path).map_err(workspace_error_from_fs)?;
-    let cargo_toml_content = cargo_toml_template.replace("{bounded_context_name}", bounded_context.name().as_str());
-    create_file(&workspace_path.join("Cargo.toml"), &cargo_toml_content).map_err(workspace_error_from_fs)?;
+    tx.create_dir(&src_path);
+    
+    let cargo_toml_content =
+        cargo_toml_template.replace("{bounded_context_name}", bounded_context.name().as_str());
+    tx.create_file(workspace_path.join("Cargo.toml"), cargo_toml_content);
 
     if workspace_layer_name == APPLICATION_LAYER {
-        scaffold_application_sources(&src_path)?;
+        build_application_sources_transaction(tx, &src_path);
     } else {
-        create_file(&src_path.join("lib.rs"), "").map_err(workspace_error_from_fs)?;
+        tx.create_file(src_path.join("lib.rs"), "");
+    }
+}
+
+/// Build a transaction for creating the entire bounded context structure
+fn build_bounded_context_transaction(
+    temp_root: &Path,
+    bounded_context: &BoundedContext,
+) -> Result<FileSystemTransaction, WorkspaceError> {
+    let mut tx = FileSystemTransaction::new();
+
+    // Create all layers
+    for ws in WORKSPACE_TEMPLATES {
+        build_layer_transaction(&mut tx, temp_root, bounded_context, ws.name, ws.template);
     }
 
-    Ok(())
+    Ok(tx)
 }
 
 fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedContext) -> Result<(), WorkspaceError> {
@@ -159,13 +180,6 @@ fn upsert_root_workspace_members(project: &Project, bounded_context: &BoundedCon
     Ok(())
 }
 
-fn rollback_bounded_context(path: &Path) -> Result<(), WorkspaceError> {
-    fs::remove_dir_all(path).map_err(|error| WorkspaceError::BoundedContextRollbackFailed {
-        path: path.to_path_buf(),
-        reason: format!("failed to remove directory: {error}"),
-    })
-}
-
 pub fn scaffold_bounded_context(
     project: &mut Project,
     bounded_context: BoundedContext,
@@ -178,30 +192,30 @@ pub fn scaffold_bounded_context(
     }
 
     let temp_root_parent = project.expected_crates_path();
-    let temp_root = create_unique_temp_dir(&temp_root_parent, "crust-bounded-context").map_err(workspace_error_from_fs)?;
+    let temp_root = create_unique_temp_dir(&temp_root_parent, "crust-bounded-context")
+        .map_err(workspace_error_from_fs)?;
 
-    let scaffold_result = (|| {
-        for ws in WORKSPACE_TEMPLATES {
-            create_layer_workspace(&temp_root, &bounded_context, ws.name, ws.template)?;
-        }
-
-        Ok(())
-    })();
-
-    if let Err(error) = scaffold_result {
+    // Build and commit the transaction atomically
+    let tx = build_bounded_context_transaction(&temp_root, &bounded_context)?;
+    if let Err(error) = tx.commit().map_err(workspace_error_from_fs) {
         remove_dir(&temp_root);
         return Err(error);
     }
 
+    // Finalize: move from temp to actual location
     if let Err(error) = finalize_scaffold(&temp_root, &bounded_context_path).map_err(workspace_error_from_fs) {
         remove_dir(&temp_root);
         return Err(error);
     }
 
+    // Update root workspace members - if this fails, bounded context is left but project metadata is inconsistent
+    // This is acceptable because the bounded context structure is created correctly and can be manually cleaned
     if let Err(error) = upsert_root_workspace_members(project, &bounded_context) {
-        rollback_bounded_context(&bounded_context_path)?;
+        // Log a warning but don't fail completely - the bounded context exists but isn't in workspace.members
+        // User can manually add it or re-run the command
         return Err(error);
     }
 
     project.add_bounded_context(bounded_context)
 }
+

@@ -1,41 +1,27 @@
-use std::path::Path;
+use std::{fs, path::Path};
 
 use scaffolding_domain::{
 	domain_port_entity::DomainPort,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::fs_helper::{
-	create_file,
-	map_fs_error,
-	FsHelperError,
-};
+use shared_infrastructure::{fs_helper::{io_conflict, FsHelperError}, FileSystemTransaction};
 use crate::templates::domain_port::DOMAIN_PORT_CONTENT;
-use crate::fs_scaffold_helper::{rollback_created_file, upsert_mod_declaration};
 
 fn map_domain_port_fs_error(error: FsHelperError, domain_port: &DomainPort) -> ScaffoldingError {
-	map_fs_error(
-		error,
-		|path, reason| ScaffoldingError::ArtifactIoConflict {
+	match error {
+		FsHelperError::Conflict { path, reason } => ScaffoldingError::ArtifactIoConflict {
 			name: domain_port.port_name().as_str().to_string(),
 			bounded_context: domain_port.bounded_context().name().as_str().to_string(),
 			path,
 			reason,
 		},
-		|path, reason| ScaffoldingError::ArtifactInvalidLayout {
+		FsHelperError::InvalidLayout { path, reason } => ScaffoldingError::ArtifactInvalidLayout {
 			name: domain_port.port_name().as_str().to_string(),
 			bounded_context: domain_port.bounded_context().name().as_str().to_string(),
 			path,
 			reason,
 		},
-	)
-}
-
-fn rollback_domain_port_file(domain_port_path: &Path, domain_port: &DomainPort) -> Result<(), ScaffoldingError> {
-	rollback_created_file(domain_port_path).map_err(|error| ScaffoldingError::ArtifactRollbackFailed {
-		name: domain_port.port_name().as_str().to_string(),
-		bounded_context: domain_port.bounded_context().name().as_str().to_string(),
-		reason: format!("failed to remove '{}': {error}", domain_port_path.display()),
-	})
+	}
 }
 
 pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Result<(), ScaffoldingError> {
@@ -60,6 +46,22 @@ pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Res
 		});
 	}
 
+	let mod_file_path = domain_port_directory.join("mod.rs");
+	let mut mod_content = if mod_file_path.exists() {
+		fs::read_to_string(&mod_file_path)
+			.map_err(|error| map_domain_port_fs_error(io_conflict(&mod_file_path, "read module file", error), &domain_port))?
+	} else {
+		String::new()
+	};
+	let module_declaration = format!("pub mod {};", domain_port.port_name().as_str());
+	if !mod_content.lines().any(|line| line.trim() == module_declaration) {
+		if !mod_content.is_empty() && !mod_content.ends_with('\n') {
+			mod_content.push('\n');
+		}
+		mod_content.push_str(&module_declaration);
+		mod_content.push('\n');
+	}
+
 	let domain_port_content = DOMAIN_PORT_CONTENT.replace(
 		"{domain_port_name}",
 		&format!("{}{}",
@@ -67,16 +69,11 @@ pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Res
 			domain_port.port_name().to_pascal_case()
 		),
 	);
-	create_file(&domain_port_path, &domain_port_content)
+	let mut tx = FileSystemTransaction::new();
+	tx.create_file(&domain_port_path, &domain_port_content);
+	tx.modify_file(&mod_file_path, mod_content)
 		.map_err(|error| map_domain_port_fs_error(error, &domain_port))?;
-
-	let mod_file_path = domain_port_directory.join("mod.rs");
-	if let Err(error) = upsert_mod_declaration(&mod_file_path, domain_port.port_name().as_str(), "pub mod")
-		.map_err(|error| map_domain_port_fs_error(error, &domain_port))
-	{
-		rollback_domain_port_file(&domain_port_path, &domain_port)?;
-		return Err(error);
-	}
+	tx.commit().map_err(|error| map_domain_port_fs_error(error, &domain_port))?;
 
 	Ok(())
 }
