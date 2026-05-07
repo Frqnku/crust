@@ -28,8 +28,9 @@ pub struct InitArgs {
 
 #[derive(Debug, Args)]
 pub struct NewArgs {
-	/// Bounded context name to create
-	pub bounded_context: String,
+	/// Bounded context names to create
+	#[arg(required = true)]
+	pub bounded_contexts: Vec<String>,
 }
 
 #[derive(Debug, Args)]

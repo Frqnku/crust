@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use colored::Colorize;
 use super::message::{Success, ErrorMessage};
 
@@ -32,6 +34,32 @@ impl Presenter {
 		eprintln!("{} {}", "⚠".yellow(), title.as_ref().yellow());
 		eprintln!("  • {}", format!("Context: {}", bounded_context.as_ref()).bright_white());
 		eprintln!("  • {}", format!("✓ Created: {}", succeeded.join(", ")).green());
+
+		for (name, error) in failed {
+			eprintln!("  • {}", format!("✗ {}: {}", name, error).red());
+		}
+	}
+
+	// Print batch result for bounded contexts creation
+	pub fn batch_result_bounded_contexts(title: impl AsRef<str>, succeeded: &[String], failed: &[(String, String)], project_root: impl AsRef<Path>) {
+		if succeeded.is_empty() {
+			eprintln!("{} {}", "✗".red().bold(), title.as_ref().red().bold());
+
+			for (name, error) in failed {
+				eprintln!("  • {}", format!("{}: {}", name, error).red());
+			}
+
+			return;
+		}
+
+		eprintln!("{} {}", "⚠".yellow(), title.as_ref().yellow());
+		eprintln!("  • {}", format!("✓ Created: {}", succeeded.join(", ")).green());
+		eprintln!("  • {}", format!("Location:\n	{}", succeeded
+			.iter()
+			.map(|name| format!("{}", project_root.as_ref().join("crates").join(name).display()))
+			.collect::<Vec<_>>()
+			.join("\n	")
+		).bright_white());
 
 		for (name, error) in failed {
 			eprintln!("  • {}", format!("✗ {}: {}", name, error).red());

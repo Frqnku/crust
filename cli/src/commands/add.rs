@@ -1,5 +1,5 @@
 use crate::error::CliError;
-use crate::helper::resolve_project_root;
+use crate::helper::{execute_batch, resolve_project_root};
 use crate::parser::{AddArgs, AddSubcommand};
 use crate::output::{Presenter, Success};
 use colored::Colorize;
@@ -49,49 +49,6 @@ fn resolve_optional_tech(with_keyword: Option<String>, tech_name: Option<String>
 				.to_string(),
 		)),
 	}
-}
-
-/// Track success/failure for batch operations
-struct BatchResult {
-	total: usize,
-	succeeded: Vec<String>,
-	failed: Vec<(String, String)>,
-}
-
-impl BatchResult {
-	fn new() -> Self {
-		Self {
-			total: 0,
-			succeeded: Vec::new(),
-			failed: Vec::new(),
-		}
-	}
-
-	fn success(&mut self, name: String) {
-		self.succeeded.push(name);
-		self.total += 1;
-	}
-
-	fn failure(&mut self, name: String, error: String) {
-		self.failed.push((name, error));
-		self.total += 1;
-	}
-}
-
-fn execute_batch<F>(names: Vec<String>, mut execute_one: F) -> BatchResult
-where
-	F: FnMut(String) -> Result<(), String>,
-{
-	let mut result = BatchResult::new();
-
-	for name in names {
-		match execute_one(name.clone()) {
-			Ok(()) => result.success(name),
-			Err(error) => result.failure(name, error),
-		}
-	}
-
-	result
 }
 
 fn render_port_impl_warning(port_name: &str, tech_name: &str, bounded_context: &str, error: &str) {

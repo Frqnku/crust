@@ -46,3 +46,46 @@ pub fn project_name_from_root(root: &Path) -> String {
 		.and_then(|name| name.to_str())
 		.map_or_else(|| "project".to_string(), |name| name.to_string())
 }
+
+/// Track success/failure for batch operations
+pub struct BatchResult {
+	pub total: usize,
+	pub succeeded: Vec<String>,
+	pub failed: Vec<(String, String)>,
+}
+
+impl BatchResult {
+	pub fn new() -> Self {
+		Self {
+			total: 0,
+			succeeded: Vec::new(),
+			failed: Vec::new(),
+		}
+	}
+
+	pub fn success(&mut self, name: String) {
+		self.succeeded.push(name);
+		self.total += 1;
+	}
+
+	pub fn failure(&mut self, name: String, error: String) {
+		self.failed.push((name, error));
+		self.total += 1;
+	}
+}
+
+pub fn execute_batch<F>(names: Vec<String>, mut execute_one: F) -> BatchResult
+where
+	F: FnMut(String) -> Result<(), String>,
+{
+	let mut result = BatchResult::new();
+
+	for name in names {
+		match execute_one(name.clone()) {
+			Ok(()) => result.success(name),
+			Err(error) => result.failure(name, error),
+		}
+	}
+
+	result
+}
