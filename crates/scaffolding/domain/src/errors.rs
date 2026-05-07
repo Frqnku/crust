@@ -7,9 +7,9 @@ pub enum ScaffoldingError {
     InvalidArtifactName { value: String, reason: String },
     InvalidBoundedContextName { value: String, reason: String },
     ArtifactAlreadyExists { name: String, bounded_context: String, kind: String },
-    ArtifactAlreadyExistsInFeature {
+    ArtifactAlreadyExistsInDomain {
         name: String,
-        feature: String,
+        domain: String,
         bounded_context: String,
         kind: String,
     },
@@ -52,8 +52,8 @@ impl Display for ScaffoldingError {
             Self::ArtifactAlreadyExists { name, bounded_context, kind } => {
                 write!(formatter, "{kind} '{name}' already exists in bounded context '{bounded_context}'")
             }
-            Self::ArtifactAlreadyExistsInFeature { name, feature, bounded_context, kind } => {
-                write!(formatter, "{kind} '{name}' already exists in feature '{feature}' in bounded context '{bounded_context}'")
+            Self::ArtifactAlreadyExistsInDomain { name, domain, bounded_context, kind } => {
+                write!(formatter, "{kind} '{name}' already exists in domain '{domain}' in bounded context '{bounded_context}'")
             }
             Self::ArtifactNotFound { name, bounded_context, kind } => {
                 write!(formatter, "{kind} '{name}' was not found in bounded context '{bounded_context}'")

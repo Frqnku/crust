@@ -38,7 +38,7 @@ pub fn validate_port_implementation_preconditions(
 			name: format!(
 				"{}/domain/{}/{}.rs",
 				implementation.bounded_context().name().as_str(),
-				implementation.feature_name().as_str(),
+				implementation.domain_feature_name().as_str(),
 				implementation.port_name().as_str()
 			),
 		});
@@ -91,7 +91,7 @@ pub fn scaffold_port_implementation(
 
 	let implementation_content = PORT_IMPLEMENTATION_CONTENT
         .replace("{bounded_context_name}", implementation.bounded_context().name().as_str())
-		.replace("{feature_name}", implementation.feature_name().as_str())
+		.replace("{domain_feature_name}", implementation.domain_feature_name().as_str())
 		.replace("{port_name}", implementation.port_name().as_str())
 		.replace("{trait_name}", &implementation.trait_name())
 		.replace("{struct_name}", &implementation.struct_name());

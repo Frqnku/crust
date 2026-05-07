@@ -27,8 +27,8 @@ pub fn scaffold_domain_feature(
 		});
 	}
 
-	let feature_directory_path = domain_src_directory.join(domain_feature.name().as_str());
-	if feature_directory_path.exists() {
+	let domain_feature_directory_path = domain_src_directory.join(domain_feature.name().as_str());
+	if domain_feature_directory_path.exists() {
 		return Err(ScaffoldingError::ArtifactAlreadyExists {
 			name: domain_feature.name().as_str().to_string(),
 			bounded_context: domain_feature.bounded_context().name().as_str().to_string(),
@@ -36,8 +36,8 @@ pub fn scaffold_domain_feature(
 		});
 	}
 
-	let mod_file_path = feature_directory_path.join("mod.rs");
-	let entity_file_path = feature_directory_path.join("entity.rs");
+	let mod_file_path = domain_feature_directory_path.join("mod.rs");
+	let entity_file_path = domain_feature_directory_path.join("entity.rs");
 	let entity_content = DOMAIN_ENTITY_CONTENT.replace("{entity_name}", &domain_feature.name().to_pascal_case());
 
 	let domain_lib_path = domain_src_directory.join("lib.rs");
@@ -57,7 +57,7 @@ pub fn scaffold_domain_feature(
 	}
 
 	let mut tx = FileSystemTransaction::new();
-	tx.create_dir(&feature_directory_path);
+	tx.create_dir(&domain_feature_directory_path);
 	tx.create_file(&mod_file_path, DOMAIN_FEATURE_MOD_CONTENT);
 	tx.create_file(&entity_file_path, entity_content);
 	tx.modify_file(&domain_lib_path, domain_lib_content)
@@ -91,10 +91,10 @@ mod tests {
 		let res = scaffold_domain_feature(project_root, artifact);
 		assert!(res.is_ok());
 
-		let feature_dir = project_root.join("crates").join(&bc).join("domain").join("src").join("auth");
-		assert!(feature_dir.is_dir());
-		assert!(feature_dir.join("mod.rs").is_file());
-		assert!(feature_dir.join("entity.rs").is_file());
+		let domain_feature_dir = project_root.join("crates").join(&bc).join("domain").join("src").join("auth");
+		assert!(domain_feature_dir.is_dir());
+		assert!(domain_feature_dir.join("mod.rs").is_file());
+		assert!(domain_feature_dir.join("entity.rs").is_file());
 		let lib = project_root.join("crates").join(&bc).join("domain").join("src").join("lib.rs");
 		let content = fs::read_to_string(lib).unwrap();
 		assert!(content.contains("pub mod auth;"));

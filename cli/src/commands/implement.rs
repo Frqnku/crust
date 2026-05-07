@@ -15,7 +15,7 @@ pub fn handle(
 	let input = CreatePortImplementationInput::new(
 		project_root,
 		args.bounded_context.clone(),
-		args.feature_name.clone(),
+		args.domain_feature_name.clone(),
 		args.port_name.clone(),
 		args.tech_name.clone(),
 	);
@@ -25,7 +25,7 @@ pub fn handle(
 	})?;
 
 	let success = Success::new("Port implementation created successfully")
-		.with_detail(format!("Feature: {}", args.feature_name))
+		.with_detail(format!("Domain: {}", args.domain_feature_name))
 		.with_detail(format!("Port: {}", args.port_name))
 		.with_detail(format!("Technology: {}", args.tech_name))
 		.with_detail(format!("Context: {}", args.bounded_context));

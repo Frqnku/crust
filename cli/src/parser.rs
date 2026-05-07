@@ -46,15 +46,15 @@ pub enum AddSubcommand {
 	Command(AddMultipleTargetArgs),
 	/// Create infrastructure technology folder(s): add tech <name> [<name2> ...] in <context>
 	Tech(AddMultipleTargetArgs),
-	/// Create domain feature folder(s): add feature <name> [<name2> ...] in <context>
-	Feature(AddMultipleTargetArgs),
-	/// Create domain port file: add port <feature> <port_name> in <context> [with <tech>]
+	/// Create domain feature folder(s): add domain <name> [<name2> ...] in <context>
+	Domain(AddMultipleTargetArgs),
+	/// Create domain port file: add port <domain> <port_name> in <context> [with <tech>]
 	Port(AddPortTargetArgs),
 }
 
 #[derive(Debug, Args)]
 pub struct AddTargetArgs {
-	/// Artifact/feature/tech name to create
+	/// Artifact/domain/tech name to create
 	pub name: String,
 
 	/// Natural-language separator keyword
@@ -74,7 +74,7 @@ pub struct AddMultipleTargetArgs {
 #[derive(Debug, Args)]
 pub struct AddPortTargetArgs {
 	/// Domain feature folder name
-	pub feature_name: String,
+	pub domain_feature_name: String,
 
 	/// Domain port file name
 	pub port_name: String,
@@ -98,7 +98,7 @@ pub struct AddPortTargetArgs {
 #[derive(Debug, Args)]
 pub struct ImplArgs {
 	/// Domain feature folder name
-	pub feature_name: String,
+	pub domain_feature_name: String,
 
 	/// Domain port file name
 	pub port_name: String,

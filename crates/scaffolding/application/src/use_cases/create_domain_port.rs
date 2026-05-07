@@ -10,7 +10,7 @@ use shared_domain::bounded_context_entity::BoundedContext;
 pub struct CreateDomainPortInput {
 	pub project_root: PathBuf,
 	pub bounded_context_name: String,
-	pub feature_name: String,
+	pub domain_feature_name: String,
 	pub port_name: String,
 }
 
@@ -18,13 +18,13 @@ impl CreateDomainPortInput {
 	pub fn new(
 		project_root: PathBuf,
 		bounded_context_name: String,
-		feature_name: String,
+		domain_feature_name: String,
 		port_name: String,
 	) -> Self {
 		Self {
 			project_root,
 			bounded_context_name,
-			feature_name,
+			domain_feature_name,
 			port_name,
 		}
 	}
@@ -41,7 +41,7 @@ impl CreateDomainPort {
 
 	pub fn execute(&self, input: CreateDomainPortInput) -> Result<(), ScaffoldingError> {
 		let bounded_context = BoundedContext::new(input.bounded_context_name)?;
-		let domain_port = DomainPort::new(bounded_context, input.feature_name, input.port_name)?;
+		let domain_port = DomainPort::new(bounded_context, input.domain_feature_name, input.port_name)?;
 		self.scaffolder.scaffold(&input.project_root, domain_port)
 	}
 }

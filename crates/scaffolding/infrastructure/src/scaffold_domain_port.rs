@@ -25,23 +25,23 @@ fn map_domain_port_fs_error(error: FsHelperError, domain_port: &DomainPort) -> S
 }
 
 pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Result<(), ScaffoldingError> {
-	let domain_port_directory = domain_port.feature_directory(project_root);
+	let domain_port_directory = domain_port.domain_feature_directory(project_root);
 
 	if !domain_port_directory.is_dir() {
 		return Err(ScaffoldingError::BoundedContextNotFound {
 			name: format!(
 				"{}/domain/{}",
 				domain_port.bounded_context().name().as_str(),
-				domain_port.feature_name().as_str()
+				domain_port.domain_feature_name().as_str()
 			),
 		});
 	}
 
 	let domain_port_path = domain_port_directory.join(domain_port.as_file_name());
 	if domain_port_path.exists() {
-		return Err(ScaffoldingError::ArtifactAlreadyExistsInFeature {
+		return Err(ScaffoldingError::ArtifactAlreadyExistsInDomain {
 			name: domain_port.port_name().as_str().to_string(),
-			feature: domain_port.feature_name().as_str().to_string(),
+			domain: domain_port.domain_feature_name().as_str().to_string(),
 			bounded_context: domain_port.bounded_context().name().as_str().to_string(),
 			kind: "Domain port".to_string(),
 		});
@@ -66,7 +66,7 @@ pub fn scaffold_domain_port(project_root: &Path, domain_port: DomainPort) -> Res
 	let domain_port_content = DOMAIN_PORT_CONTENT.replace(
 		"{domain_port_name}",
 		&format!("{}{}",
-			domain_port.feature_name().to_pascal_case(),
+			domain_port.domain_feature_name().to_pascal_case(),
 			domain_port.port_name().to_pascal_case()
 		),
 	);

@@ -45,7 +45,7 @@ fn resolve_optional_tech(with_keyword: Option<String>, tech_name: Option<String>
 		(None, None) => Ok(None),
 		(Some(_), Some(tech)) => Ok(Some(tech)),
 		_ => Err(CliError::OperationFailed(
-			"Use port syntax as 'add port <feature> <port> in <context>' or 'add port <feature> <port> in <context> with <tech>'"
+			"Use port syntax as 'add port <domain> <port> in <context>' or 'add port <domain> <port> in <context> with <tech>'"
 				.to_string(),
 		)),
 	}
@@ -213,13 +213,13 @@ pub fn handle(
 				);
 			}
 		}
-		AddSubcommand::Feature(add_args) => {
+		AddSubcommand::Domain(add_args) => {
 			let (names, bounded_context) = parse_multiple_target_args(add_args.args)?;
-			let result = execute_batch(names, |feature_name| {
+			let result = execute_batch(names, |domain_feature_name| {
 				let input = CreateDomainFeatureInput::new(
 					project_root.clone(),
 					bounded_context.clone(),
-					feature_name.clone(),
+					domain_feature_name.clone(),
 				);
 				create_domain_feature.execute(input).map_err(|error| error.to_string())
 			});
@@ -228,13 +228,13 @@ pub fn handle(
 			if result.succeeded.len() == result.total {
 				// All succeeded
 				let mut message = Success::new(format!(
-					"Domain feature{} created successfully",
+					"Domain{} created successfully",
 					if result.total == 1 { "" } else { "s" }
 				))
 				.with_detail(format!("Context: {}", bounded_context));
 				
 				if result.total == 1 {
-					message = message.with_detail(format!("Feature: {}", result.succeeded[0]));
+					message = message.with_detail(format!("Domain: {}", result.succeeded[0]));
 				} else {
 					message = message.with_detail(format!("Created: {}", result.succeeded.join(", ")));
 				}
@@ -242,7 +242,7 @@ pub fn handle(
 				Presenter::success(&message);
 			} else {
 				Presenter::batch_result(
-					format!("Domain features: {}/{} succeeded", result.succeeded.len(), result.total),
+					format!("Domains: {}/{} succeeded", result.succeeded.len(), result.total),
 					&bounded_context,
 					&result.succeeded,
 					&result.failed,
@@ -254,7 +254,7 @@ pub fn handle(
 			let port_input = CreateDomainPortInput::new(
 				project_root.clone(),
 				add_args.bounded_context.clone(),
-				add_args.feature_name.clone(),
+				add_args.domain_feature_name.clone(),
 				add_args.port_name.clone(),
 			);
 			create_domain_port.execute(port_input).map_err(|error| {
@@ -262,7 +262,7 @@ pub fn handle(
 			})?;
 
 			let success = Success::new("Domain port created successfully")
-				.with_detail(format!("Feature: {}", add_args.feature_name))
+				.with_detail(format!("Domain: {}", add_args.domain_feature_name))
 				.with_detail(format!("Port: {}", add_args.port_name))
 				.with_detail(format!("Context: {}", add_args.bounded_context));
 			Presenter::success(&success);
@@ -271,7 +271,7 @@ pub fn handle(
 				let impl_input = CreatePortImplementationInput::new(
 					project_root,
 					add_args.bounded_context.clone(),
-					add_args.feature_name.clone(),
+					add_args.domain_feature_name.clone(),
 					add_args.port_name.clone(),
 					tech.clone(),
 				);
@@ -279,7 +279,7 @@ pub fn handle(
 				match create_port_implementation.execute(impl_input) {
 					Ok(()) => {
 						let impl_success = Success::new("Port implementation created successfully")
-							.with_detail(format!("Feature: {}", add_args.feature_name))
+							.with_detail(format!("Domain: {}", add_args.domain_feature_name))
 							.with_detail(format!("Port: {}", add_args.port_name))
 							.with_detail(format!("Technology: {}", tech))
 							.with_detail(format!("Context: {}", add_args.bounded_context));
