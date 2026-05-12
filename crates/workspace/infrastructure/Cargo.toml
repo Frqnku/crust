@@ -2,6 +2,8 @@
 name = "workspace_infrastructure"
 version = "0.1.0"
 edition = "2024"
+description = "Workspace infrastructure layer for the Crust project"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 workspace_domain = { path = "../domain", version = "0.1.0" }

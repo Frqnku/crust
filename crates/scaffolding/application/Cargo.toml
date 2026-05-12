@@ -2,6 +2,8 @@
 name = "scaffolding_application"
 version = "0.1.0"
 edition = "2024"
+description = "Scaffolding application layer for the Crust project"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 scaffolding_domain = { path = "../domain", version = "0.1.0" }

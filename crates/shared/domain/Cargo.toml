@@ -2,3 +2,5 @@
 name = "shared_domain"
 version = "0.1.0"
 edition = "2024"
+description = "Shared domain layer for the Crust project"
+license = "MIT OR Apache-2.0"

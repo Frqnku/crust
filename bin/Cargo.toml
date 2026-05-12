@@ -2,6 +2,8 @@
 name = "crust-cli"
 version = "0.1.0"
 edition = "2024"
+description = "Crust CLI binary"
+license = "MIT OR Apache-2.0"
 
 [dependencies]
 cli = { path = "../cli", version = "0.1.0" }
