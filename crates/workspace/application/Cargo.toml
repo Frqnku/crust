@@ -4,5 +4,5 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-workspace_domain = { path = "../domain" }
-shared_domain = { path = "../../shared/domain" }
+workspace_domain = { path = "../domain", version = "0.1.0" }
+shared_domain = { path = "../../shared/domain", version = "0.1.0" }

@@ -4,11 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-cli = { path = "../cli" }
-scaffolding_application = { path = "../crates/scaffolding/application" }
-scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure" }
-workspace_application = { path = "../crates/workspace/application" }
-workspace_infrastructure = { path = "../crates/workspace/infrastructure" }
+cli = { path = "../cli", version = "0.1.0" }
+scaffolding_application = { path = "../crates/scaffolding/application", version = "0.1.0" }
+scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure", version = "0.1.0" }
+workspace_application = { path = "../crates/workspace/application", version = "0.1.0" }
+workspace_infrastructure = { path = "../crates/workspace/infrastructure", version = "0.1.0" }
 
 [[bin]]
 name = "crust"

@@ -4,7 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-workspace_domain = { path = "../domain" }
-shared_domain = { path = "../../shared/domain" }
-shared_infrastructure = { path = "../../shared/infrastructure" }
+workspace_domain = { path = "../domain", version = "0.1.0" }
+shared_domain = { path = "../../shared/domain", version = "0.1.0" }
+shared_infrastructure = { path = "../../shared/infrastructure", version = "0.1.0" }
 toml_edit.workspace = true

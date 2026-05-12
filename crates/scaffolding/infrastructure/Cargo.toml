@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-scaffolding_domain = { path = "../domain" }
-shared_domain = { path = "../../shared/domain" }
-shared_infrastructure = { path = "../../shared/infrastructure" }
+scaffolding_domain = { path = "../domain", version = "0.1.0" }
+shared_domain = { path = "../../shared/domain", version = "0.1.0" }
+shared_infrastructure = { path = "../../shared/infrastructure", version = "0.1.0" }
 
 [dev-dependencies]
 tempfile = "3.8"
