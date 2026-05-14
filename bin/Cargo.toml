@@ -6,7 +6,7 @@ description = "Crust CLI binary"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-crust_cli = { path = "../cli", version = "0.1.0" }
+crust_cli_adapter = { path = "../cli", version = "0.1.0" }
 crust_scaffolding_application = { path = "../crates/scaffolding/application", version = "0.1.0" }
 crust_scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure", version = "0.1.0" }
 crust_workspace_application = { path = "../crates/workspace/application", version = "0.1.0" }

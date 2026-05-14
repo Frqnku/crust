@@ -12,8 +12,8 @@ use crust_scaffolding_infrastructure::fs_artifact_scaffolder::FsArtifactScaffold
 use crust_workspace_application::use_cases::add_bounded_context::AddBoundedContext;
 use crust_workspace_application::use_cases::initialize_project::InitializeProject;
 use crust_workspace_infrastructure::fs_project_scaffolder::FsProjectScaffolder;
-use crust_cli::app::App;
-use crust_cli::output::Presenter;
+use crust_cli_adapter::app::App;
+use crust_cli_adapter::output::Presenter;
 
 struct CompositionRoot {
     initialize_project: InitializeProject,
