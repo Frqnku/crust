@@ -1,5 +1,5 @@
 use clap::Parser;
-use scaffolding_application::use_cases::{
+use crust_scaffolding_application::use_cases::{
     create_domain_feature::CreateDomainFeature,
 	create_domain_port::CreateDomainPort,
     create_infrastructure_tech::CreateInfrastructureTech,
@@ -7,8 +7,8 @@ use scaffolding_application::use_cases::{
 	create_port_implementation::CreatePortImplementation,
     create_query_usecase::CreateQueryUsecase,
 };
-use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
-use workspace_application::use_cases::initialize_project::InitializeProject;
+use crust_workspace_application::use_cases::add_bounded_context::AddBoundedContext;
+use crust_workspace_application::use_cases::initialize_project::InitializeProject;
 
 use crate::commands;
 use crate::error::CliError;

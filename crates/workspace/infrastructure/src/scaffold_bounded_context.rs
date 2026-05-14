@@ -1,10 +1,10 @@
 use std::fs;
 use std::path::Path;
 
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 use toml_edit::{Array, DocumentMut, Item, Value};
 
-use shared_infrastructure::{
+use crust_shared_infrastructure::{
     fs_helper::{
         create_unique_temp_dir,
         finalize_scaffold,
@@ -18,7 +18,7 @@ use shared_infrastructure::{
 
 use crate::templates::crates::WORKSPACE_TEMPLATES;
 
-use workspace_domain::{
+use crust_workspace_domain::{
     project_entity::Project,
     errors::WorkspaceError,
 };

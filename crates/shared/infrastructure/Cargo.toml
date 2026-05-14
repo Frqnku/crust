@@ -1,5 +1,5 @@
 [package]
-name = "shared_infrastructure"
+name = "crust_shared_infrastructure"
 version = "0.1.0"
 edition = "2024"
 description = "Shared infrastructure layer for the Crust project"

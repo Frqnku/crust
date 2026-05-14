@@ -3,7 +3,7 @@ use crate::helper::{execute_batch, resolve_project_root};
 use crate::parser::{AddArgs, AddSubcommand};
 use crate::output::{Presenter, Success};
 use colored::Colorize;
-use scaffolding_application::use_cases::{
+use crust_scaffolding_application::use_cases::{
 	create_domain_feature::{CreateDomainFeature, CreateDomainFeatureInput},
 	create_domain_port::{CreateDomainPort, CreateDomainPortInput},
 	create_infrastructure_tech::{CreateInfrastructureTech, CreateInfrastructureTechInput},

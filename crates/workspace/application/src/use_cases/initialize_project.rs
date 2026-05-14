@@ -1,6 +1,6 @@
 use std::{path::PathBuf, rc::Rc};
 
-use workspace_domain::{
+use crust_workspace_domain::{
     project_entity::{
         Project,
         ProjectScaffolder
@@ -37,8 +37,8 @@ impl InitializeProject {
 mod tests {
     use super::*;
     use std::{cell::RefCell, path::PathBuf, rc::Rc};
-    use workspace_domain::project_entity::ProjectScaffolder;
-    use shared_domain::bounded_context_entity::BoundedContext;
+    use crust_workspace_domain::project_entity::ProjectScaffolder;
+    use crust_shared_domain::bounded_context_entity::BoundedContext;
 
     struct MockProjectScaffolder {
         called: RefCell<bool>,
@@ -51,12 +51,12 @@ mod tests {
     }
 
     impl ProjectScaffolder for MockProjectScaffolder {
-        fn create_project(&self, name: String, path: PathBuf) -> Result<workspace_domain::project_entity::Project, workspace_domain::errors::WorkspaceError> {
+        fn create_project(&self, name: String, path: PathBuf) -> Result<crust_workspace_domain::project_entity::Project, crust_workspace_domain::errors::WorkspaceError> {
             *self.called.borrow_mut() = true;
-            Ok(workspace_domain::project_entity::Project::new(name, path)?)
+            Ok(crust_workspace_domain::project_entity::Project::new(name, path)?)
         }
 
-        fn create_bounded_context(&self, _project: &mut workspace_domain::project_entity::Project, _bounded_context: BoundedContext) -> Result<(), workspace_domain::errors::WorkspaceError> {
+        fn create_bounded_context(&self, _project: &mut crust_workspace_domain::project_entity::Project, _bounded_context: BoundedContext) -> Result<(), crust_workspace_domain::errors::WorkspaceError> {
             Ok(())
         }
     }
@@ -77,6 +77,6 @@ mod tests {
         let usecase = InitializeProject::new(mock.clone());
         let input = InitializeProjectInput::new("Bad Project".into(), PathBuf::from("."));
         let res = usecase.execute(input);
-        assert!(matches!(res, Err(workspace_domain::errors::WorkspaceError::InvalidProjectName { .. })));
+        assert!(matches!(res, Err(crust_workspace_domain::errors::WorkspaceError::InvalidProjectName { .. })));
     }
 }

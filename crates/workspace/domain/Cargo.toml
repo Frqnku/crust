@@ -1,9 +1,9 @@
 [package]
-name = "workspace_domain"
+name = "crust_workspace_domain"
 version = "0.1.0"
 edition = "2024"
 description = "Workspace domain layer for the Crust project"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-shared_domain = { path = "../../shared/domain", version = "0.1.0" }
+crust_shared_domain = { path = "../../shared/domain", version = "0.1.0" }

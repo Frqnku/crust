@@ -2,7 +2,7 @@ use crate::error::CliError;
 use crate::helper::resolve_project_root;
 use crate::parser::ImplArgs;
 use crate::output::{Presenter, Success};
-use scaffolding_application::use_cases::create_port_implementation::{
+use crust_scaffolding_application::use_cases::create_port_implementation::{
 	CreatePortImplementation,
 	CreatePortImplementationInput,
 };

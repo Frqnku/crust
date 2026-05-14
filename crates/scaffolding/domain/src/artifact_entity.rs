@@ -1,4 +1,4 @@
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 use std::path::Path;
 
 use crate::{errors::ScaffoldingError, value_object::{ArtifactKind, ArtifactName}};

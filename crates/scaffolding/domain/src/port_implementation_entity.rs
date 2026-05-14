@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 
 use crate::{errors::ScaffoldingError, value_object::ArtifactName};
 

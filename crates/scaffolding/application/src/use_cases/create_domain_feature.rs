@@ -1,12 +1,12 @@
 use std::{path::PathBuf, rc::Rc};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	artifact_entity::Artifact,
 	errors::ScaffoldingError,
 	scaffolder_ports::DomainFeatureScaffolder,
 	value_object::ArtifactKind,
 };
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 
 pub struct CreateDomainFeatureInput {
 	pub project_root: PathBuf,
@@ -63,8 +63,8 @@ mod tests {
 		fn scaffold(
 			&self,
 			_project_root: &Path,
-			_artifact: scaffolding_domain::artifact_entity::Artifact,
-		) -> Result<(), scaffolding_domain::errors::ScaffoldingError> {
+			_artifact: crust_scaffolding_domain::artifact_entity::Artifact,
+		) -> Result<(), crust_scaffolding_domain::errors::ScaffoldingError> {
 			*self.called.borrow_mut() = true;
 			Ok(())
 		}

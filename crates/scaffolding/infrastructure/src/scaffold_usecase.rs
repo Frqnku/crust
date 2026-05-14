@@ -1,10 +1,10 @@
 use std::{fs, path::Path};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	artifact_entity::Artifact,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::{fs_helper::io_conflict, FileSystemTransaction};
+use crust_shared_infrastructure::{fs_helper::io_conflict, FileSystemTransaction};
 use crate::templates::usecase::USECASE_CONTENT;
 use crate::fs_scaffold_helper::map_artifact_fs_error;
 

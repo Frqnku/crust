@@ -1,12 +1,12 @@
 [package]
-name = "workspace_infrastructure"
+name = "crust_workspace_infrastructure"
 version = "0.1.0"
 edition = "2024"
 description = "Workspace infrastructure layer for the Crust project"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-workspace_domain = { path = "../domain", version = "0.1.0" }
-shared_domain = { path = "../../shared/domain", version = "0.1.0" }
-shared_infrastructure = { path = "../../shared/infrastructure", version = "0.1.0" }
+crust_workspace_domain = { path = "../domain", version = "0.1.0" }
+crust_shared_domain = { path = "../../shared/domain", version = "0.1.0" }
+crust_shared_infrastructure = { path = "../../shared/infrastructure", version = "0.1.0" }
 toml_edit.workspace = true

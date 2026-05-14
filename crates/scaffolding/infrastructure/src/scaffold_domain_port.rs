@@ -1,10 +1,10 @@
 use std::{fs, path::Path};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	domain_port_entity::DomainPort,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::{fs_helper::{io_conflict, FsHelperError}, FileSystemTransaction};
+use crust_shared_infrastructure::{fs_helper::{io_conflict, FsHelperError}, FileSystemTransaction};
 use crate::templates::domain_port::DOMAIN_PORT_CONTENT;
 
 fn map_domain_port_fs_error(error: FsHelperError, domain_port: &DomainPort) -> ScaffoldingError {

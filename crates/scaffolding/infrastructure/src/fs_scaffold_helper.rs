@@ -1,5 +1,5 @@
-use scaffolding_domain::{artifact_entity::Artifact, errors::ScaffoldingError};
-use shared_infrastructure::fs_helper::{FsHelperError, map_fs_error};
+use crust_scaffolding_domain::{artifact_entity::Artifact, errors::ScaffoldingError};
+use crust_shared_infrastructure::fs_helper::{FsHelperError, map_fs_error};
 
 pub fn map_artifact_fs_error(error: FsHelperError, artifact: &Artifact) -> ScaffoldingError {
 	map_fs_error(

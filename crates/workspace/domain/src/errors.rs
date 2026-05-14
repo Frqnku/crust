@@ -1,6 +1,6 @@
 use std::fmt::{Display, Formatter};
 use std::path::PathBuf;
-use shared_domain::errors::SharedError;
+use crust_shared_domain::errors::SharedError;
 
 #[derive(Debug, PartialEq)]
 pub enum WorkspaceError {

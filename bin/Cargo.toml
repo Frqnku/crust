@@ -6,11 +6,11 @@ description = "Crust CLI binary"
 license = "MIT OR Apache-2.0"
 
 [dependencies]
-cli = { path = "../cli", version = "0.1.0" }
-scaffolding_application = { path = "../crates/scaffolding/application", version = "0.1.0" }
-scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure", version = "0.1.0" }
-workspace_application = { path = "../crates/workspace/application", version = "0.1.0" }
-workspace_infrastructure = { path = "../crates/workspace/infrastructure", version = "0.1.0" }
+crust_cli = { path = "../cli", version = "0.1.0" }
+crust_scaffolding_application = { path = "../crates/scaffolding/application", version = "0.1.0" }
+crust_scaffolding_infrastructure = { path = "../crates/scaffolding/infrastructure", version = "0.1.0" }
+crust_workspace_application = { path = "../crates/workspace/application", version = "0.1.0" }
+crust_workspace_infrastructure = { path = "../crates/workspace/infrastructure", version = "0.1.0" }
 
 [[bin]]
 name = "crust"

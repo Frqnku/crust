@@ -5,8 +5,8 @@ use crate::{
     scaffold_project::scaffold_project,
 };
 
-use shared_domain::bounded_context_entity::BoundedContext;
-use workspace_domain::{
+use crust_shared_domain::bounded_context_entity::BoundedContext;
+use crust_workspace_domain::{
     project_entity::{
         Project,
         ProjectScaffolder

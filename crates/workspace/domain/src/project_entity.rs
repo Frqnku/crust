@@ -2,8 +2,8 @@ use std::fmt;
 use std::path::PathBuf;
 
 use crate::errors::WorkspaceError;
-use shared_domain::helper::validate_crust_identifier;
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::helper::validate_crust_identifier;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ProjectName(String);

@@ -1,11 +1,11 @@
 use std::{path::PathBuf, rc::Rc};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	errors::ScaffoldingError,
 	port_implementation_entity::PortImplementation,
 	scaffolder_ports::PortImplementationScaffolder,
 };
-use shared_domain::bounded_context_entity::BoundedContext;
+use crust_shared_domain::bounded_context_entity::BoundedContext;
 
 pub struct CreatePortImplementationInput {
 	pub project_root: PathBuf,
@@ -73,8 +73,8 @@ mod tests {
 		fn scaffold(
 			&self,
 			_project_root: &Path,
-			_implementation: scaffolding_domain::port_implementation_entity::PortImplementation,
-		) -> Result<(), scaffolding_domain::errors::ScaffoldingError> {
+			_implementation: crust_scaffolding_domain::port_implementation_entity::PortImplementation,
+		) -> Result<(), crust_scaffolding_domain::errors::ScaffoldingError> {
 			*self.called.borrow_mut() = true;
 			Ok(())
 		}

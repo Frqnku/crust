@@ -2,7 +2,7 @@ use crate::error::CliError;
 use crate::helper::current_dir;
 use crate::parser::InitArgs;
 use crate::output::{Presenter, Success};
-use workspace_application::use_cases::initialize_project::{InitializeProject, InitializeProjectInput};
+use crust_workspace_application::use_cases::initialize_project::{InitializeProject, InitializeProjectInput};
 
 pub fn handle(initialize_project: &InitializeProject, args: InitArgs) -> Result<(), CliError> {
 	let current_dir = current_dir()?;

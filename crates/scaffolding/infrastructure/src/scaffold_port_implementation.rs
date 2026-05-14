@@ -1,10 +1,10 @@
 use std::{fs, path::Path};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	errors::ScaffoldingError,
 	port_implementation_entity::PortImplementation,
 };
-use shared_infrastructure::{fs_helper::{io_conflict, map_fs_error, FsHelperError}, FileSystemTransaction};
+use crust_shared_infrastructure::{fs_helper::{io_conflict, map_fs_error, FsHelperError}, FileSystemTransaction};
 
 use crate::templates::port_implementation::PORT_IMPLEMENTATION_CONTENT;
 
@@ -125,8 +125,8 @@ mod tests {
 		fs::create_dir_all(&impl_dir).unwrap();
 		fs::write(impl_dir.join("mod.rs"), "").unwrap();
 
-		let implementation = scaffolding_domain::port_implementation_entity::PortImplementation::new(
-			shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
+		let implementation = crust_scaffolding_domain::port_implementation_entity::PortImplementation::new(
+			crust_shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
 			"auth".to_string(),
 			"repo".to_string(),
 			"postgres".to_string(),
@@ -150,8 +150,8 @@ mod tests {
 		let impl_dir = project_root.join("crates").join(&bc).join("infrastructure").join("src").join("postgres");
 		fs::create_dir_all(&impl_dir).unwrap();
 
-		let implementation = scaffolding_domain::port_implementation_entity::PortImplementation::new(
-			shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
+		let implementation = crust_scaffolding_domain::port_implementation_entity::PortImplementation::new(
+			crust_shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
 			"auth".to_string(),
 			"repo".to_string(),
 			"postgres".to_string(),

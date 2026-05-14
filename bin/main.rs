@@ -1,6 +1,6 @@
 use std::rc::Rc;
 
-use scaffolding_application::use_cases::{
+use crust_scaffolding_application::use_cases::{
     create_domain_feature::CreateDomainFeature,
     create_domain_port::CreateDomainPort,
     create_infrastructure_tech::CreateInfrastructureTech,
@@ -8,12 +8,12 @@ use scaffolding_application::use_cases::{
     create_port_implementation::CreatePortImplementation,
     create_query_usecase::CreateQueryUsecase,
 };
-use scaffolding_infrastructure::fs_artifact_scaffolder::FsArtifactScaffolder;
-use workspace_application::use_cases::add_bounded_context::AddBoundedContext;
-use workspace_application::use_cases::initialize_project::InitializeProject;
-use workspace_infrastructure::fs_project_scaffolder::FsProjectScaffolder;
-use cli::app::App;
-use cli::output::Presenter;
+use crust_scaffolding_infrastructure::fs_artifact_scaffolder::FsArtifactScaffolder;
+use crust_workspace_application::use_cases::add_bounded_context::AddBoundedContext;
+use crust_workspace_application::use_cases::initialize_project::InitializeProject;
+use crust_workspace_infrastructure::fs_project_scaffolder::FsProjectScaffolder;
+use crust_cli::app::App;
+use crust_cli::output::Presenter;
 
 struct CompositionRoot {
     initialize_project: InitializeProject,

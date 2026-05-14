@@ -1,10 +1,10 @@
 use std::{fs, path::Path};
 
-use scaffolding_domain::{
+use crust_scaffolding_domain::{
 	artifact_entity::Artifact,
 	errors::ScaffoldingError,
 };
-use shared_infrastructure::{fs_helper::io_conflict, FileSystemTransaction};
+use crust_shared_infrastructure::{fs_helper::io_conflict, FileSystemTransaction};
 
 use crate::fs_scaffold_helper::map_artifact_fs_error;
 
@@ -77,9 +77,9 @@ mod tests {
 		fs::create_dir_all(&bc_path).unwrap();
 		fs::write(bc_path.join("lib.rs"), "").unwrap();
 
-		let artifact = scaffolding_domain::artifact_entity::Artifact::new(
-			shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
-			scaffolding_domain::value_object::ArtifactKind::InfrastructureTech,
+		let artifact = crust_scaffolding_domain::artifact_entity::Artifact::new(
+			crust_shared_domain::bounded_context_entity::BoundedContext::new(bc.clone()).unwrap(),
+			crust_scaffolding_domain::value_object::ArtifactKind::InfrastructureTech,
 			"postgres".to_string(),
 		).unwrap();
 
@@ -98,9 +98,9 @@ mod tests {
 	fn missing_bounded_context_directory_returns_error() {
 		let tmp = TempDir::new().unwrap();
 		let project_root = tmp.path();
-		let artifact = scaffolding_domain::artifact_entity::Artifact::new(
-			shared_domain::bounded_context_entity::BoundedContext::new("test".to_string()).unwrap(),
-			scaffolding_domain::value_object::ArtifactKind::InfrastructureTech,
+		let artifact = crust_scaffolding_domain::artifact_entity::Artifact::new(
+			crust_shared_domain::bounded_context_entity::BoundedContext::new("test".to_string()).unwrap(),
+			crust_scaffolding_domain::value_object::ArtifactKind::InfrastructureTech,
 			"postgres".to_string(),
 		).unwrap();
 

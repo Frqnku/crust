@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use shared_infrastructure::{
+use crust_shared_infrastructure::{
     fs_helper::{
         create_unique_temp_dir,
         finalize_scaffold,
@@ -15,12 +15,12 @@ use crate::templates::{
     project::PROJECT_CARGO_TOML,
 };
 
-use workspace_domain::{
+use crust_workspace_domain::{
     project_entity::Project,
     errors::WorkspaceError,
 };
 
-fn workspace_error_from_fs(error: shared_infrastructure::fs_helper::FsHelperError) -> WorkspaceError {
+fn workspace_error_from_fs(error: crust_shared_infrastructure::fs_helper::FsHelperError) -> WorkspaceError {
     map_fs_error(
         error,
         |path, reason| WorkspaceError::ProjectStructureConflict { path, reason },

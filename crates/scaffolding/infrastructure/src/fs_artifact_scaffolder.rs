@@ -1,4 +1,4 @@
-use scaffolding_domain::scaffolder_ports::{
+use crust_scaffolding_domain::scaffolder_ports::{
     DomainFeatureScaffolder,
     DomainPortScaffolder,
     InfrastructureTechScaffolder,
@@ -6,10 +6,10 @@ use scaffolding_domain::scaffolder_ports::{
     CommandUsecaseScaffolder,
     QueryUsecaseScaffolder,
 };
-use scaffolding_domain::artifact_entity::Artifact;
-use scaffolding_domain::domain_port_entity::DomainPort;
-use scaffolding_domain::errors::ScaffoldingError;
-use scaffolding_domain::port_implementation_entity::PortImplementation;
+use crust_scaffolding_domain::artifact_entity::Artifact;
+use crust_scaffolding_domain::domain_port_entity::DomainPort;
+use crust_scaffolding_domain::errors::ScaffoldingError;
+use crust_scaffolding_domain::port_implementation_entity::PortImplementation;
 use std::path::Path;
 
 use crate::{scaffold_domain::scaffold_domain_feature, scaffold_usecase::scaffold_usecase};

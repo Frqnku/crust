@@ -1,7 +1,7 @@
 use std::{path::PathBuf, rc::Rc};
 
-use shared_domain::bounded_context_entity::BoundedContext;
-use workspace_domain::{
+use crust_shared_domain::bounded_context_entity::BoundedContext;
+use crust_workspace_domain::{
 	project_entity::{
 		ProjectScaffolder,
 		Project,
@@ -48,9 +48,9 @@ mod tests {
 
 	struct MockProjectScaffolder { called: RefCell<bool> }
 	impl MockProjectScaffolder { fn new() -> Self { Self { called: RefCell::new(false) } } }
-	impl workspace_domain::project_entity::ProjectScaffolder for MockProjectScaffolder {
-		fn create_project(&self, _name: String, _path: PathBuf) -> Result<workspace_domain::project_entity::Project, workspace_domain::errors::WorkspaceError> { unimplemented!() }
-		fn create_bounded_context(&self, _project: &mut workspace_domain::project_entity::Project, _bounded_context: shared_domain::bounded_context_entity::BoundedContext) -> Result<(), workspace_domain::errors::WorkspaceError> {
+	impl crust_workspace_domain::project_entity::ProjectScaffolder for MockProjectScaffolder {
+		fn create_project(&self, _name: String, _path: PathBuf) -> Result<crust_workspace_domain::project_entity::Project, crust_workspace_domain::errors::WorkspaceError> { unimplemented!() }
+		fn create_bounded_context(&self, _project: &mut crust_workspace_domain::project_entity::Project, _bounded_context: crust_shared_domain::bounded_context_entity::BoundedContext) -> Result<(), crust_workspace_domain::errors::WorkspaceError> {
 			*self.called.borrow_mut() = true; Ok(())
 		}
 	}
@@ -71,7 +71,7 @@ mod tests {
 		let usecase = AddBoundedContext::new(mock.clone());
 		let input = AddBoundedContextInput::new("Bad Project".into(), PathBuf::from("."), "test".into());
 		let res = usecase.execute(input);
-		assert!(matches!(res, Err(workspace_domain::errors::WorkspaceError::InvalidProjectName { .. })));
+		assert!(matches!(res, Err(crust_workspace_domain::errors::WorkspaceError::InvalidProjectName { .. })));
 		assert!(!*mock.called.borrow());
 	}
 }
